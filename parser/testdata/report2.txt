@@ -1,0 +1,29 @@
+Spam detection software, running on the system "server.glocksoft.com",
+    has NOT identified this incoming email as spam.  The original
+    message has been attached to this so you can view it or label
+    similar future email.  If you have any questions, see
+    root\@localhost for details.
+    Content preview:  Thanks вЂ” and can I manage multiple emails from a single
+      account?В  On Thu, Oct 17, 2019 at 2:55 AM, G-Lock Software < support@glocksoft.com
+       > wrote: > > Hi Nick, > В  > Thank you for your reply. > > We provide the
+       ability to create a custom plan for your needs. For > example, you can create
+       a plan for the desired number of spam tests per > month w [...]
+    Content analysis details:   (-0.2 points, 10.0 required)
+     pts rule name              description
+    ---- ---------------------- --------------------------------------------------
+     0.0 URIBL_BLOCKED          ADMINISTRATOR NOTICE: The query to URIBL was
+                                blocked.  See
+                                http://wiki.apache.org/spamassassin/DnsBlocklists#dnsbl-block
+                                 for more information.
+                                [URIs: glocksoft.com]
+     0.0 FREEMAIL_FROM          Sender email is commonly abused enduser mail
+                                provider (nickedwar[at]gmail.com)
+    -0.0 SPF_PASS               SPF: sender matches SPF record
+     0.0 HTML_MESSAGE           BODY: HTML included in message
+    -0.1 DKIM_VALID_AU          Message has a valid DKIM or DK signature from
+                                author's domain
+    -0.1 DKIM_VALID             Message has at least one valid DKIM or DK signature
+    -0.1 DKIM_VALID_EF          Message has a valid DKIM or DK signature from
+                                envelope-from domain
+     0.1 DKIM_SIGNED            Message has a DKIM or DK signature, not necessarily
+                                valid
