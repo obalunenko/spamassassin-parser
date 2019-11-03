@@ -75,19 +75,6 @@ func TestProcessReports(t *testing.T) {
 		},
 	}
 
-	go func() {
-		for _, tt := range tests {
-			tt := tt
-			file := utils.GetReaderFromFile(t, tt.input.filepath)
-			t.Logf("processing report: %s \n", tt.input.testID)
-			inChan <- Input{
-				Data:       file,
-				TestID:     tt.input.testID,
-				ResultChan: resChan,
-			}
-		}
-		close(inChan)
-	}()
 	type expected struct {
 		report  models.Report
 		wantErr bool
@@ -103,6 +90,20 @@ func TestProcessReports(t *testing.T) {
 			wantErr: tt.want.wantErr,
 		}
 	}
+
+	go func() {
+		for _, tt := range tests {
+			tt := tt
+			file := utils.GetReaderFromFile(t, tt.input.filepath)
+			t.Logf("processing report: %s \n", tt.input.testID)
+			inChan <- Input{
+				Data:       file,
+				TestID:     tt.input.testID,
+				ResultChan: resChan,
+			}
+		}
+		close(inChan)
+	}()
 
 	// check all reports processed
 	var processed int
@@ -122,6 +123,7 @@ LOOP:
 
 		case <-ctx.Done():
 			assert.Equal(t, len(expResults), processed, "deadline reached, but not all results received")
+			time.Sleep(time.Second * 2)
 			break LOOP
 		}
 	}

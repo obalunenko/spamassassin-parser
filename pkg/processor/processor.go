@@ -4,6 +4,7 @@ package processor
 import (
 	"context"
 	"io"
+	"log"
 
 	"github.com/oleg-balunenko/spamassassin-parser/pkg/models"
 	"github.com/oleg-balunenko/spamassassin-parser/pkg/parser"
@@ -44,25 +45,21 @@ func MakeBufferedInputChan(buf uint) chan Input {
 }
 
 // ProcessReports handles imported reports and runs them through parser.
+// User is responsible for canceling the context if process need to be stopped.
 func ProcessReports(ctx context.Context, incomingReport <-chan Input) {
 	for in := range incomingReport {
 		if in.ResultChan != nil {
 			if ctx.Err() != nil {
-				in.ResultChan <- Response{
-					TestID: in.TestID,
-					Report: models.Report{},
-					Error:  ctx.Err(),
-				}
 				return
 			}
 
 			report, err := parser.ParseReport(in.Data)
-
 			in.ResultChan <- Response{
 				TestID: in.TestID,
 				Report: report,
 				Error:  err,
 			}
+			log.Printf("[TestID: %s] processed \n", in.TestID)
 		}
 	}
 }
