@@ -1,0 +1,47 @@
+{
+  "spamAssassin": {
+    "score": -0.2,
+    "headers": [
+      {
+        "score": 0,
+        "tag": "URIBL_BLOCKED",
+        "description": "ADMINISTRATOR NOTICE: The query to URIBL was blocked.  See http://wiki.apache.org/spamassassin/DnsBlocklists#dnsbl-block for more information. [URIs: glocksoft.com]"
+      },
+      {
+        "score": 0,
+        "tag": "FREEMAIL_FROM",
+        "description": "Sender email is commonly abused enduser mail provider (nickedwar[at]gmail.com)"
+      },
+      {
+        "score": 0,
+        "tag": "SPF_PASS",
+        "description": "SPF: sender matches SPF record"
+      },
+      {
+        "score": 0,
+        "tag": "HTML_MESSAGE",
+        "description": "BODY: HTML included in message"
+      },
+      {
+        "score": -0.1,
+        "tag": "DKIM_VALID_AU",
+        "description": "Message has a valid DKIM or DK signature from author's domain"
+      },
+      {
+        "score": -0.1,
+        "tag": "DKIM_VALID",
+        "description": "Message has at least one valid DKIM or DK signature"
+      },
+      {
+        "score": -0.1,
+        "tag": "DKIM_VALID_EF",
+        "description": "Message has a valid DKIM or DK signature from envelope-from domain"
+      },
+      {
+        "score": 0.1,
+        "tag": "DKIM_SIGNED",
+        "description": "Message has a DKIM or DK signature, not necessarily valid"
+      }
+    ]
+  }
+}

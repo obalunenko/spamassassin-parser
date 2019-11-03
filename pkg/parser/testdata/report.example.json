@@ -1,0 +1,42 @@
+{
+   "spamAssassin":{
+      "score":1,
+      "headers":[
+         {
+            "score":0,
+            "tag":"SPF_PASS",
+            "description":"SPF: sender matches SPF record"
+         },
+         {
+            "score":0,
+            "tag":"T_KAM_HTML_FONT_INVALID",
+            "description":"BODY: Test for Invalidly Named or Formatted Colors in HTML"
+         },
+         {
+            "score":0,
+            "tag":"HTML_MESSAGE",
+            "description":"BODY: HTML included in message"
+         },
+         {
+            "score":1.1,
+            "tag":"KAM_REALLYHUGEIMGSRC",
+            "description":"RAW: Spam with image tags with ridiculously huge http urls"
+         },
+         {
+            "score":-0.1,
+            "tag":"DKIM_VALID_AU",
+            "description":"Message has a valid DKIM or DK signature from author's domain"
+         },
+         {
+            "score":-0.1,
+            "tag":"DKIM_VALID",
+            "description":"Message has at least one valid DKIM or DK signature"
+         },
+         {
+            "score":0.1,
+            "tag":"DKIM_SIGNED",
+            "description":"Message has a DKIM or DK signature, not necessarily valid"
+         }
+      ]
+   }
+}
