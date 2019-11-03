@@ -1,4 +1,7 @@
 # spamassassin-parser
+[![Coverage Status](https://coveralls.io/repos/github/oleg-balunenko/spamassassin-parser/badge.svg?branch=master)](https://coveralls.io/github/oleg-balunenko/spamassassin-parser?branch=master)
+[![Go Report Card](https://goreportcard.com/badge/github.com/oleg-balunenko/spamassassin-parser)](https://goreportcard.com/report/github.com/oleg-balunenko/spamassassin-parser)
+
 
 spamassassin-parser - a command line tool that parses spam filter reports into human readable json.
 
