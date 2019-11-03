@@ -1,7 +1,9 @@
 # spamassassin-parser
+[![Build Status](https://travis-ci.com/oleg-balunenko/spamassassin-parser.svg?branch=master)](https://travis-ci.com/oleg-balunenko/spamassassin-parser)
 [![Coverage Status](https://coveralls.io/repos/github/oleg-balunenko/spamassassin-parser/badge.svg?branch=master)](https://coveralls.io/github/oleg-balunenko/spamassassin-parser?branch=master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/oleg-balunenko/spamassassin-parser)](https://goreportcard.com/report/github.com/oleg-balunenko/spamassassin-parser)
-
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=oleg-balunenko_spamassassin-parser&metric=alert_status)](https://sonarcloud.io/dashboard?id=oleg-balunenko_spamassassin-parser)
+[![Latest release artifacts](https://img.shields.io/badge/artifacts-download-blue.svg)](https://github.com/oleg-balunenko/spamassassin-parser/releases/latest)
 
 spamassassin-parser - a command line tool that parses spam filter reports into human readable json.
 
