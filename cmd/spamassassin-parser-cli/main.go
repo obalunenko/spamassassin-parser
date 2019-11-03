@@ -30,8 +30,9 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
-	req := make(chan processor.InputReport)
-	resChan := make(chan processor.Response)
+	req := processor.MakeInputChan()
+	resChan := processor.MakeResponseChan()
+
 	go processor.ProcessReports(ctx, req)
 
 	file, err := os.Open(*reportFile)
@@ -42,11 +43,12 @@ func main() {
 	signal.Notify(stopChan, os.Interrupt)
 
 	go func() {
-		req <- processor.InputReport{
+		req <- processor.Input{
 			Data:       file,
 			TestID:     file.Name(),
 			ResultChan: resChan,
 		}
+		close(req)
 	}()
 
 LOOP:
@@ -54,20 +56,17 @@ LOOP:
 		select {
 		case res := <-resChan:
 			if res.Error != nil {
-				close(req)
 				log.Fatalf("%s: %v \n", res.TestID, res.Error)
 			}
-			s, err := utils.PrettyPrint(res.Report)
+			s, err := utils.PrettyPrint(res.Report, "", "\t")
 			if err != nil {
 				log.Fatal(errors.Wrap(err, "failed to print report"))
 			}
 			log.Printf("TestID[%s]:\n %s", res.TestID, s)
 		case <-ctx.Done():
-			close(req)
 			log.Println("context deadline")
 			break LOOP
 		case <-stopChan:
-			close(req)
 			log.Println("ctrl+c received")
 			break LOOP
 		}

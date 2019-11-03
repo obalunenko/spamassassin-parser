@@ -1,15 +1,13 @@
 package parser
 
 import (
-	"encoding/json"
-	"io"
-	"io/ioutil"
-	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/oleg-balunenko/spamassassin-parser/pkg/utils"
 )
 
 const (
@@ -19,26 +17,6 @@ const (
 	testReport1 = "report1.txt"
 	testReport2 = "report2.txt"
 )
-
-func getReaderFromFile(tb testing.TB, fPath string) io.Reader {
-	tb.Helper()
-
-	file, err := os.Open(fPath)
-	require.NoError(tb, err)
-	return file
-}
-
-func getReportFromFile(tb testing.TB, fPath string) Report {
-	tb.Helper()
-
-	b, err := ioutil.ReadFile(fPath)
-	require.NoError(tb, err)
-
-	var rp Report
-	err = json.Unmarshal(b, &rp)
-	require.NoError(tb, err)
-	return rp
-}
 
 func TestProcessReport(t *testing.T) {
 	type args struct {
@@ -56,20 +34,20 @@ func TestProcessReport(t *testing.T) {
 		{
 			name: "process report type 1",
 			args: args{
-				filepath: filepath.Join(testdata, testReport1),
+				filepath: filepath.Join("..", testdata, testReport1),
 			},
 			expected: expected{
-				filepath: filepath.Join(testdata, goldenFile1),
+				filepath: filepath.Join("..", testdata, goldenFile1),
 				wantErr:  false,
 			},
 		},
 		{
 			name: "process report type 2",
 			args: args{
-				filepath: filepath.Join(testdata, testReport2),
+				filepath: filepath.Join("..", testdata, testReport2),
 			},
 			expected: expected{
-				filepath: filepath.Join(testdata, goldenFile2),
+				filepath: filepath.Join("..", testdata, goldenFile2),
 				wantErr:  false,
 			},
 		},
@@ -77,14 +55,14 @@ func TestProcessReport(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			data := getReaderFromFile(t, tt.args.filepath)
-			got, err := ProcessReport(data)
+			data := utils.GetReaderFromFile(t, tt.args.filepath)
+			got, err := ParseReport(data)
 			if tt.expected.wantErr {
 				assert.Error(t, err)
 				return
 			}
 
-			wantReport := getReportFromFile(t, tt.expected.filepath)
+			wantReport := utils.GetReportFromFile(t, tt.expected.filepath)
 			assert.NoError(t, err)
 			assert.Equal(t, wantReport, got)
 		})
@@ -108,22 +86,22 @@ func Test_processReport(t *testing.T) {
 		{
 			name: "process report type 1",
 			args: args{
-				filepath: filepath.Join(testdata, testReport1),
+				filepath: filepath.Join("..", testdata, testReport1),
 				rt:       reportType1,
 			},
 			expected: expected{
-				filepath: filepath.Join(testdata, goldenFile1),
+				filepath: filepath.Join("..", testdata, goldenFile1),
 				wantErr:  false,
 			},
 		},
 		{
 			name: "process report type 2",
 			args: args{
-				filepath: filepath.Join(testdata, testReport2),
+				filepath: filepath.Join("..", testdata, testReport2),
 				rt:       reportType2,
 			},
 			expected: expected{
-				filepath: filepath.Join(testdata, goldenFile2),
+				filepath: filepath.Join("..", testdata, goldenFile2),
 				wantErr:  false,
 			},
 		},
@@ -131,13 +109,17 @@ func Test_processReport(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			data := getReaderFromFile(t, tt.args.filepath)
-			got, err := processReport(data, tt.args.rt)
+			data := utils.GetReaderFromFile(t, tt.args.filepath)
+			parser, err := newParser(tt.args.rt)
+			require.NoError(t, err)
+			require.NotNil(t, parser)
+
+			got, err := parser.Parse(data)
 			if tt.expected.wantErr {
 				assert.Error(t, err)
 				return
 			}
-			wantReport := getReportFromFile(t, tt.expected.filepath)
+			wantReport := utils.GetReportFromFile(t, tt.expected.filepath)
 			assert.NoError(t, err)
 			assert.Equal(t, wantReport, got)
 		})
@@ -159,7 +141,7 @@ func Test_getReportType(t *testing.T) {
 		{
 			name: "report type 1",
 			args: args{
-				filepath: filepath.Join(testdata, testReport1),
+				filepath: filepath.Join("..", testdata, testReport1),
 			},
 			expected: expected{
 				rt: reportType1,
@@ -168,7 +150,7 @@ func Test_getReportType(t *testing.T) {
 		{
 			name: "report type 2",
 			args: args{
-				filepath: filepath.Join(testdata, testReport2),
+				filepath: filepath.Join("..", testdata, testReport2),
 			},
 			expected: expected{
 				rt: reportType2,
@@ -177,7 +159,7 @@ func Test_getReportType(t *testing.T) {
 		{
 			name: "unknown type",
 			args: args{
-				filepath: filepath.Join(testdata, "empty.json"),
+				filepath: filepath.Join("..", testdata, "empty.json"),
 			},
 			expected: expected{
 				rt: reportTypeUnknown,
@@ -187,9 +169,58 @@ func Test_getReportType(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			data := getReaderFromFile(t, tt.args.filepath)
+			data := utils.GetReaderFromFile(t, tt.args.filepath)
 			got := getReportType(data)
 			assert.Equal(t, tt.expected.rt.String(), got.String())
+		})
+	}
+}
+
+func Test_newParser(t *testing.T) {
+	type args struct {
+		rt reportType
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    Parser
+		wantErr bool
+	}{
+		{
+			name: "report1 parser",
+			args: args{
+				rt: reportType1,
+			},
+			want:    report1Parser{},
+			wantErr: false,
+		},
+		{
+			name: "report2 parser",
+			args: args{
+				rt: reportType2,
+			},
+			want:    report2Parser{},
+			wantErr: false,
+		},
+		{
+			name: "unknown report parser",
+			args: args{
+				rt: reportTypeUnknown,
+			},
+			want:    nil,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := newParser(tt.args.rt)
+			if tt.wantErr {
+				assert.Error(t, err)
+				return
+			}
+			assert.NoError(t, err)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
