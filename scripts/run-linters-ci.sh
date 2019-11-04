@@ -6,8 +6,9 @@ SCRIPTS_DIR=${REPO_ROOT}/scripts
 # shellcheck disable=SC1090
 source "${SCRIPTS_DIR}"/linters.sh
 
+
 vet
 fmt
 go-lint
 go-group
-golangci
+golangci-ci_execute

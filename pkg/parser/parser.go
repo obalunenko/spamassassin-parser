@@ -31,6 +31,7 @@ func newParser(rt reportType) (Parser, error) {
 	case reportType2:
 		return report2Parser{}, nil
 	}
+
 	return nil, errors.Errorf("not implemented parser for report: %s", rt.String())
 }
 
@@ -77,6 +78,7 @@ func getReportType(data io.Reader) reportType {
 	for sc.Scan() {
 		line := sc.Text()
 		line = strings.TrimSpace(line)
+
 		switch {
 		case strings.HasPrefix(line, "*"):
 			return reportType1
@@ -84,6 +86,7 @@ func getReportType(data io.Reader) reportType {
 			return reportType2
 		}
 	}
+
 	return reportTypeUnknown
 }
 
