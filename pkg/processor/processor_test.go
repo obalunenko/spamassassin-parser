@@ -13,14 +13,13 @@ import (
 )
 
 func TestProcessReports(t *testing.T) {
-	inChan := MakeInputChan()
-	resChan := MakeResponseChan()
-
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 
 	defer cancel()
 
-	go ProcessReports(ctx, inChan)
+	processor := NewProcessor()
+
+	go processor.Process(ctx)
 
 	type want struct {
 		filepath string
@@ -100,13 +99,12 @@ func TestProcessReports(t *testing.T) {
 			tt := tt
 			file := utils.GetReaderFromFile(t, tt.input.filepath)
 			t.Logf("processing report: %s \n", tt.input.testID)
-			inChan <- Input{
-				Data:       file,
-				TestID:     tt.input.testID,
-				ResultChan: resChan,
+			processor.Input() <- &models.ProcessorInput{
+				Data:   file,
+				TestID: tt.input.testID,
 			}
 		}
-		close(inChan)
+		processor.Close()
 	}()
 
 	// check all reports processed
@@ -114,16 +112,18 @@ func TestProcessReports(t *testing.T) {
 LOOP:
 	for {
 		select {
-		case res := <-resChan:
-			processed++
-			t.Logf("received result: %s\n", res.TestID)
-			exp := expResults[res.TestID]
-			if exp.wantErr {
-				assert.Error(t, res.Error)
-				continue
+		case res := <-processor.Results():
+			if res != nil {
+				processed++
+				t.Logf("received result: %s\n", res.TestID)
+				exp := expResults[res.TestID]
+				if exp.wantErr {
+					assert.Error(t, res.Error)
+					continue
+				}
+				assert.NoError(t, res.Error)
+				assert.Equal(t, exp.report, res.Report)
 			}
-			assert.NoError(t, res.Error)
-			assert.Equal(t, exp.report, res.Report)
 
 		case <-ctx.Done():
 			assert.Equal(t, len(expResults), processed, "deadline reached, but not all results received")
