@@ -98,9 +98,21 @@ if [[ -f "$(go env GOPATH)/bin/gogroup" ]] || [[ -f "/usr/local/bin/gogroup" ]];
 }
 
 function golangci(){
-    echo "golang-ci linter running..."
+    echo "golangci-lint linter running..."
     if [[ -f "$(go env GOPATH)/bin/golangci-lint" ]] || [[ -f "/usr/local/bin/golangci-lint" ]]; then
-        golangci-lint run --out-format=colored-line-number
+        golangci-lint run --out-format=colored-line-number ./...
+    else
+        printf "Cannot check golang-ci, please run:
+        curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(go env GOPATH)/bin \n"
+        exit 1
+    fi
+    echo ""
+}
+
+function golangci-ci_execute(){
+    echo "golangci-lint-ci_execute linter running..."
+    if [[ -f "$(go env GOPATH)/bin/golangci-lint" ]] || [[ -f "/usr/local/bin/golangci-lint" ]]; then
+        golangci-lint run  ./...  > linters.out
     else
         printf "Cannot check golang-ci, please run:
         curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(go env GOPATH)/bin \n"

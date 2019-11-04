@@ -47,6 +47,12 @@ lint:
 	./scripts/run-linters.sh
 .PHONY: lint
 
+lint-ci:
+	${call colored, lint_ci is running...}
+	./scripts/run-linters-ci.sh
+.PHONY: lint-ci
+
+
 ## format markdown files in project
 pretty-markdown:
 	find . -name '*.md' -not -wholename './vendor/*' | xargs prettier --write
