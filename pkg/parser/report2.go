@@ -25,20 +25,26 @@ func (rp report2Parser) Parse(data io.Reader) (models.Report, error) {
 		colTag
 		colDescr
 	)
+
 	var (
 		r     models.Report
 		score float64
 		lnum  int
 		start bool
 	)
+
 	sc := bufio.NewScanner(data)
+
 	for sc.Scan() {
 		lnum++
+
 		line := sc.Text()
+
 		if !start {
 			if strings.Contains(line, "----") {
 				start = true
 			}
+
 			continue
 		}
 
@@ -53,12 +59,12 @@ func (rp report2Parser) Parse(data io.Reader) (models.Report, error) {
 
 			sc = sanitizeScore(sc)
 			score = score + sc
+
 			r.SpamAssassin.Headers = append(r.SpamAssassin.Headers, models.Headers{
 				Score:       sc,
 				Tag:         matches[colTag],
 				Description: matches[colDescr],
 			})
-
 		} else {
 			last := len(r.SpamAssassin.Headers) - 1
 			if last >= 0 {

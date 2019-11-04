@@ -27,6 +27,7 @@ func PrettyPrint(v interface{}, prefix string, indent string) (string, error) {
 	if err := json.Indent(&out, b, prefix, indent); err != nil {
 		return "", errors.Wrap(err, "failed to indent")
 	}
+
 	if _, err := out.WriteString("\n"); err != nil {
 		return "", errors.Wrap(err, "failed to write string")
 	}
@@ -40,6 +41,7 @@ func GetReaderFromFile(tb testing.TB, fPath string) io.Reader {
 
 	file, err := os.Open(fPath)
 	require.NoError(tb, err)
+
 	return file
 }
 
@@ -51,7 +53,9 @@ func GetReportFromFile(tb testing.TB, fPath string) models.Report {
 	require.NoError(tb, err)
 
 	var rp models.Report
+
 	err = json.Unmarshal(b, &rp)
 	require.NoError(tb, err)
+
 	return rp
 }

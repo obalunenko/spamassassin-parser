@@ -19,14 +19,16 @@ var (
 )
 
 func main() {
-	printVersion()
 	defer log.Println("Exit...")
+
+	printVersion()
 
 	flag.Parse()
 
 	if *reportFile == "" {
 		log.Fatal("report_file not set")
 	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
@@ -39,6 +41,7 @@ func main() {
 	if err != nil {
 		log.Fatal(errors.Wrap(err, "failed to open file with report"))
 	}
+
 	stopChan := make(chan os.Signal, 1)
 	signal.Notify(stopChan, os.Interrupt)
 
@@ -71,5 +74,4 @@ LOOP:
 			break LOOP
 		}
 	}
-
 }

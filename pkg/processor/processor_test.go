@@ -17,6 +17,7 @@ func TestProcessReports(t *testing.T) {
 	resChan := MakeResponseChan()
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+
 	defer cancel()
 
 	go ProcessReports(ctx, inChan)
@@ -25,10 +26,12 @@ func TestProcessReports(t *testing.T) {
 		filepath string
 		wantErr  bool
 	}
+
 	type input struct {
 		filepath string
 		testID   string
 	}
+
 	var tests = []struct {
 		input input
 		want  want
@@ -79,6 +82,7 @@ func TestProcessReports(t *testing.T) {
 		report  models.Report
 		wantErr bool
 	}
+
 	expResults := make(map[string]expected, len(tests))
 
 	for _, tt := range tests {
@@ -127,5 +131,4 @@ LOOP:
 			break LOOP
 		}
 	}
-
 }

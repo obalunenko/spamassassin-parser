@@ -22,10 +22,12 @@ func TestProcessReport(t *testing.T) {
 	type args struct {
 		filepath string
 	}
+
 	type expected struct {
 		filepath string
 		wantErr  bool
 	}
+
 	tests := []struct {
 		name     string
 		args     args
@@ -52,6 +54,7 @@ func TestProcessReport(t *testing.T) {
 			},
 		},
 	}
+
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
@@ -74,10 +77,12 @@ func Test_processReport(t *testing.T) {
 		filepath string
 		rt       reportType
 	}
+
 	type expected struct {
 		filepath string
 		wantErr  bool
 	}
+
 	tests := []struct {
 		name     string
 		args     args
@@ -106,6 +111,7 @@ func Test_processReport(t *testing.T) {
 			},
 		},
 	}
+
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
@@ -130,9 +136,11 @@ func Test_getReportType(t *testing.T) {
 	type args struct {
 		filepath string
 	}
+
 	type expected struct {
 		rt reportType
 	}
+
 	tests := []struct {
 		name     string
 		args     args
@@ -166,6 +174,7 @@ func Test_getReportType(t *testing.T) {
 			},
 		},
 	}
+
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
@@ -180,6 +189,7 @@ func Test_newParser(t *testing.T) {
 	type args struct {
 		rt reportType
 	}
+
 	tests := []struct {
 		name    string
 		args    args
