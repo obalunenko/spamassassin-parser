@@ -1,3 +1,4 @@
+// Package parser provides functionality to parse spamassassin result into json report.
 package parser
 
 import (
@@ -6,23 +7,52 @@ import (
 	"io"
 	"io/ioutil"
 	"math"
-	"regexp"
-	"strconv"
 	"strings"
 
 	"github.com/pkg/errors"
+
+	"github.com/oleg-balunenko/spamassassin-parser/pkg/models"
 )
 
-var emptyReport Report
-
-var errNotImplemented = errors.New("not implemented")
 var (
-	reType1 = regexp.MustCompile(`([*])[\s]+([-]?\d.\d)?[\s](([[:word:]]+)?[\s](.*))`)
-	reType2 = regexp.MustCompile(`(?m)([-]?\d.\d)[\s]+([[:word:]]+)\s+(.*[\n]?)`)
+	emptyReport models.Report
 )
 
-// ProcessReport parses passed raw report to json representation.
-func ProcessReport(data io.Reader) (Report, error) {
+// Parser is an interface that describes the basic functionality of a reports parser.
+type Parser interface {
+	// Parse takes a file as input and returns parsed from it report.
+	Parse(data io.Reader) (models.Report, error)
+}
+
+func newParser(rt reportType) (Parser, error) {
+	switch rt {
+	case reportType1:
+		return report1Parser{}, nil
+	case reportType2:
+		return report2Parser{}, nil
+	}
+	return nil, errors.Errorf("not implemented parser for report: %s", rt.String())
+}
+
+//go:generate stringer -type=reportType
+
+// reportType
+type reportType int
+
+const (
+	reportTypeUnknown reportType = iota
+	reportType1
+	reportType2
+
+	reportTypeSentinel // should be always last.
+)
+
+func (i reportType) Valid() bool {
+	return i > reportTypeUnknown && i < reportTypeSentinel
+}
+
+// ParseReport parses passed raw report to json representation.
+func ParseReport(data io.Reader) (models.Report, error) {
 	b, err := ioutil.ReadAll(data)
 	if err != nil {
 		return emptyReport, errors.Wrap(err, "failed to read from reader")
@@ -30,7 +60,16 @@ func ProcessReport(data io.Reader) (Report, error) {
 
 	rt := getReportType(bytes.NewReader(b))
 
-	return processReport(bytes.NewReader(b), rt)
+	if !rt.Valid() {
+		return emptyReport, errors.New("invalid report type")
+	}
+
+	parser, err := newParser(rt)
+	if err != nil {
+		return emptyReport, errors.Wrap(err, "failed to get parser")
+	}
+
+	return parser.Parse(bytes.NewReader(b))
 }
 
 func getReportType(data io.Reader) reportType {
@@ -48,135 +87,10 @@ func getReportType(data io.Reader) reportType {
 	return reportTypeUnknown
 }
 
-func processReport(data io.Reader, rt reportType) (Report, error) {
-	if !rt.Valid() {
-		return Report{}, errors.New("invalid report type")
-	}
-	switch rt {
-	case reportType1:
-		return processReportType1(data)
-
-	case reportType2:
-		return processReportType2(data)
+func sanitizeScore(f float64) float64 {
+	if f == -0 {
+		f = 0
 	}
 
-	return emptyReport, errNotImplemented
-}
-
-func processReportType1(data io.Reader) (Report, error) {
-	const (
-		colFullMatch = iota
-		colAsterisk
-		colScore
-		colTagWithDescr
-		colTag
-		colDescr
-	)
-	var (
-		r     Report
-		score float64
-		lnum  int
-	)
-	sc := bufio.NewScanner(data)
-	for sc.Scan() {
-		lnum++
-		line := sc.Text()
-
-		matches := reType1.FindStringSubmatch(line)
-		if len(matches) == 0 {
-			return emptyReport, errors.Errorf("failed to find matches for regex [line num: %d], [line: %s]",
-				lnum, line)
-		}
-
-		if matches[colScore] != "" {
-			sc, err := strconv.ParseFloat(matches[colScore], 64)
-			if err != nil {
-				return emptyReport, errors.Wrapf(err,
-					"failed to parse score [line num: %d], [line: %s], score[%s]",
-					lnum, line, matches[colScore])
-			}
-
-			sc = sanitizeScore(sc)
-			score = score + sc
-			r.SpamAssassin.Headers = append(r.SpamAssassin.Headers, Headers{
-				Score:       sc,
-				Tag:         matches[colTag],
-				Description: matches[colDescr],
-			})
-
-		} else {
-			last := len(r.SpamAssassin.Headers) - 1
-			if last >= 0 {
-				r.SpamAssassin.Headers[last].Description += " " + matches[colDescr]
-			}
-		}
-
-	}
-
-	r.SpamAssassin.Score = sanitizeScore(score)
-
-	return r, nil
-}
-
-func sanitizeScore(sc float64) float64 {
-	if sc == -0 {
-		sc = 0
-	}
-	return math.RoundToEven(sc*100) / 100
-}
-
-func processReportType2(data io.Reader) (Report, error) {
-
-	const (
-		colFullMatch = iota
-		colScore
-		colTag
-		colDescr
-	)
-	var (
-		r     Report
-		score float64
-		lnum  int
-		start bool
-	)
-	sc := bufio.NewScanner(data)
-	for sc.Scan() {
-		lnum++
-		line := sc.Text()
-		if !start {
-			if strings.Contains(line, "----") {
-				start = true
-			}
-			continue
-		}
-
-		matches := reType2.FindStringSubmatch(line)
-		if len(matches) != 0 {
-			sc, err := strconv.ParseFloat(matches[colScore], 64)
-			if err != nil {
-				return emptyReport, errors.Wrapf(err,
-					"failed to parse score [line num: %d], [line: %s], score[%s]",
-					lnum, line, matches[colScore])
-			}
-
-			sc = sanitizeScore(sc)
-			score = score + sc
-			r.SpamAssassin.Headers = append(r.SpamAssassin.Headers, Headers{
-				Score:       sc,
-				Tag:         matches[colTag],
-				Description: matches[colDescr],
-			})
-
-		} else {
-			last := len(r.SpamAssassin.Headers) - 1
-			if last >= 0 {
-				line = strings.TrimSpace(line)
-				r.SpamAssassin.Headers[last].Description += " " + line
-			}
-		}
-	}
-
-	r.SpamAssassin.Score = sanitizeScore(score)
-
-	return r, nil
+	return math.Round(f*100) / 100
 }

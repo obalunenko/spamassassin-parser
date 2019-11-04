@@ -1,21 +1,5 @@
-package parser
-
-//go:generate stringer -type=reportType
-
-// reportType
-type reportType int
-
-const (
-	reportTypeUnknown reportType = iota
-	reportType1
-	reportType2
-
-	reportTypeSentinel // should be always last.
-)
-
-func (i reportType) Valid() bool {
-	return i > reportTypeUnknown && i < reportTypeSentinel
-}
+// Package models describes models for json marshal-unmarshal.
+package models
 
 // Report represents spamassasin report.
 type Report struct {
