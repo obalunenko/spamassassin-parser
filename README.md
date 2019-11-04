@@ -3,6 +3,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/oleg-balunenko/spamassassin-parser)](https://goreportcard.com/report/github.com/oleg-balunenko/spamassassin-parser)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=oleg-balunenko_spamassassin-parser&metric=alert_status)](https://sonarcloud.io/dashboard?id=oleg-balunenko_spamassassin-parser)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/8847ad100b3f415fa419430a58de1a2d)](https://www.codacy.com/manual/oleg.balunenko/spamassassin-parser?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=oleg-balunenko/spamassassin-parser&amp;utm_campaign=Badge_Grade)
+[![GoDoc](https://godoc.org/github.com/oleg-balunenko/spamassassin-parser?status.svg)](https://godoc.org/github.com/oleg-balunenko/spamassassin-parser)
 [![Latest release artifacts](https://img.shields.io/badge/artifacts-download-blue.svg)](https://github.com/oleg-balunenko/spamassassin-parser/releases/latest)
 # spamassassin-parser
 spamassassin-parser - a command line tool that parses spam filter reports into human readable json.
