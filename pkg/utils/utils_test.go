@@ -1,0 +1,80 @@
+package utils
+
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func TestPrettyPrint(t *testing.T) {
+	type args struct {
+		v      interface{}
+		prefix string
+		indent string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    string
+		wantErr bool
+	}{
+		{
+			name: "print struct",
+			args: args{
+				v: struct {
+					Field1 string
+					Field2 string
+				}{
+					Field1: "testfield1",
+					Field2: "testfield2",
+				},
+				prefix: "",
+				indent: "\t",
+			},
+			want: `{
+	"Field1": "testfield1",
+	"Field2": "testfield2"
+}
+`,
+			wantErr: false,
+		},
+		{
+			name: "print map",
+			args: args{
+				v: map[string]int{
+					"Field1": 1,
+					"Field2": 2,
+				},
+				prefix: "",
+				indent: "\t",
+			},
+			want: `{
+	"Field1": 1,
+	"Field2": 2
+}
+`,
+			wantErr: false,
+		},
+		{
+			name: "print nil",
+			args: args{
+				v:      nil,
+				prefix: "",
+				indent: "\t",
+			},
+			want:    "null\n",
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := PrettyPrint(tt.args.v, tt.args.prefix, tt.args.indent)
+			if tt.wantErr {
+				assert.Error(t, err)
+				return
+			}
+			assert.NoError(t, err)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
