@@ -14,6 +14,7 @@ func TestNewProcessorInput(t *testing.T) {
 		data   io.Reader
 		testID string
 	}
+
 	tests := []struct {
 		name string
 		args args
@@ -31,11 +32,12 @@ func TestNewProcessorInput(t *testing.T) {
 			},
 		},
 	}
+
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			got := NewProcessorInput(tt.args.data, tt.args.testID)
 			assert.Equal(t, tt.want, got)
-
 		})
 	}
 }
@@ -45,6 +47,7 @@ func TestError_Error(t *testing.T) {
 		Err    error
 		TestID string
 	}
+
 	tests := []struct {
 		name   string
 		fields fields
@@ -59,7 +62,9 @@ func TestError_Error(t *testing.T) {
 			want: "TestID[testID1]: test error",
 		},
 	}
+
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			e := Error{
 				Err:    tt.fields.Err,
@@ -67,7 +72,6 @@ func TestError_Error(t *testing.T) {
 			}
 			got := e.Error()
 			assert.Equal(t, tt.want, got)
-
 		})
 	}
 }
@@ -77,6 +81,7 @@ func TestNewError(t *testing.T) {
 		err    error
 		testID string
 	}
+
 	tests := []struct {
 		name    string
 		args    args
@@ -102,7 +107,9 @@ func TestNewError(t *testing.T) {
 			wantErr: nil,
 		},
 	}
+
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			got := NewError(tt.args.err, tt.args.testID)
 			assert.Equal(t, tt.wantErr, got)
@@ -115,6 +122,7 @@ func TestNewProcessorResponse(t *testing.T) {
 		testID string
 		report Report
 	}
+
 	tests := []struct {
 		name string
 		args args
@@ -154,11 +162,12 @@ func TestNewProcessorResponse(t *testing.T) {
 			},
 		},
 	}
+
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			got := NewProcessorResponse(tt.args.testID, tt.args.report)
 			assert.Equal(t, tt.want, got)
-
 		})
 	}
 }

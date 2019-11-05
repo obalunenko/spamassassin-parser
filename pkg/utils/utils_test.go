@@ -12,6 +12,7 @@ func TestPrettyPrint(t *testing.T) {
 		prefix string
 		indent string
 	}
+
 	tests := []struct {
 		name    string
 		args    args
@@ -66,7 +67,9 @@ func TestPrettyPrint(t *testing.T) {
 			wantErr: false,
 		},
 	}
+
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := PrettyPrint(tt.args.v, tt.args.prefix, tt.args.indent)
 			if tt.wantErr {
