@@ -2,6 +2,7 @@
 package models
 
 import (
+	"fmt"
 	"io"
 )
 
@@ -29,9 +30,40 @@ type ProcessorInput struct {
 	TestID string
 }
 
+// NewProcessorInput constructs new ProcessorInput with passed parameters.
+func NewProcessorInput(data io.Reader, testID string) *ProcessorInput {
+	return &ProcessorInput{Data: data, TestID: testID}
+}
+
 // ProcessorResponse contains processed input result.
 type ProcessorResponse struct {
 	TestID string
 	Report Report
-	Error  error
+}
+
+// NewProcessorResponse constructs new ProcessResponse with passed parameters.
+func NewProcessorResponse(testID string, report Report) *ProcessorResponse {
+	return &ProcessorResponse{TestID: testID, Report: report}
+}
+
+// Error is an processor error.
+type Error struct {
+	Err    error
+	TestID string
+}
+
+func (e Error) Error() string {
+	return fmt.Sprintf("TestID[%s]: %s", e.TestID, e.Err.Error())
+}
+
+// NewError constructs new error with passed parameters.
+func NewError(err error, testID string) error {
+	if err == nil {
+		return nil
+	}
+
+	return &Error{
+		Err:    err,
+		TestID: testID,
+	}
 }
