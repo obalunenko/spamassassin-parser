@@ -69,7 +69,7 @@ func NewDefaultProcessor() Processor {
 // NewProcessor creates processor instance.
 func NewProcessor(cfg *Config) Processor {
 	if cfg == nil {
-		return NewDefaultProcessor()
+		cfg = NewConfig()
 	}
 
 	var pr processor
