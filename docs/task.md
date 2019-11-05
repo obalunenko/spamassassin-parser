@@ -1,3 +1,5 @@
+# Task
+
 Имеется функция, которая "стягивает" имейлы с почтовых ящиков,
 находит testID (string) в заголовке или теле письма.
 Если емаил прошел через Spamassassin, функция вынимает репорт (см. header1, header2)
@@ -16,6 +18,8 @@
 
 Пример Spamassassin репорта (2 варианта header1 и header2):
 
+``` txt
+
     header1 = ` * -0.0 RCVD_IN_DNSWL_NONE RBL: Sender listed at
     *      https://www.dnswl.org/, no trust
     *      [209.85.161.101 listed in list.dnswl.org]
@@ -31,7 +35,9 @@
     *  0.0 PDS_NO_HELO_DNS High profile HELO but no A record
 
 `
+```
 
+``` txt
     header2 = `Spam detection software, running on the system "server.glocksoft.com",
     has NOT identified this incoming email as spam.  The original
     message has been attached to this so you can view it or label
@@ -63,10 +69,13 @@
                                 valid
 
 `
+```
 
 //----------------------------------------------------------------------------------------------------------
 
 Output:
+
+``` txt
 
 "spamAssassin" : {
 "score" : 1,
@@ -108,3 +117,5 @@ Output:
 }
 ]
 }
+
+```
