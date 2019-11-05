@@ -14,6 +14,7 @@ func Test_makeHeader(t *testing.T) {
 		tag         string
 		description string
 	}
+
 	tests := []struct {
 		name    string
 		args    args
@@ -45,7 +46,9 @@ func Test_makeHeader(t *testing.T) {
 			wantErr: true,
 		},
 	}
+
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := makeHeader(tt.args.score, tt.args.tag, tt.args.description)
 			if tt.wantErr {
