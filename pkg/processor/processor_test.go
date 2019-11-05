@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/oleg-balunenko/spamassassin-parser/pkg/models"
 	"github.com/oleg-balunenko/spamassassin-parser/pkg/utils"
@@ -17,7 +18,10 @@ func TestProcessReports(t *testing.T) {
 
 	defer cancel()
 
-	processor := NewProcessor()
+	cfg := NewConfig()
+	cfg.Receive.Errors = true
+
+	processor := NewProcessor(cfg)
 
 	go processor.Process(ctx)
 
@@ -117,13 +121,20 @@ LOOP:
 				processed++
 				t.Logf("received result: %s\n", res.TestID)
 				exp := expResults[res.TestID]
-				if exp.wantErr {
-					assert.Error(t, res.Error)
-					continue
-				}
-				assert.NoError(t, res.Error)
+
 				assert.Equal(t, exp.report, res.Report)
 			}
+		case err := <-processor.Errors():
+			require.IsType(t, &models.Error{}, err, "unexpected error type")
+			merr := err.(*models.Error)
+			exp := expResults[merr.TestID]
+
+			if exp.wantErr {
+				assert.Error(t, err)
+				processed++
+				continue
+			}
+			assert.NoError(t, err)
 
 		case <-ctx.Done():
 			assert.Equal(t, len(expResults), processed, "deadline reached, but not all results received")
@@ -131,4 +142,28 @@ LOOP:
 			break LOOP
 		}
 	}
+}
+
+func TestNewConfig(t *testing.T) {
+	expConfgig := &Config{
+		Buffer: 0,
+		Receive: struct {
+			Response bool
+			Errors   bool
+		}{
+			Response: true,
+			Errors:   false,
+		},
+	}
+	got := NewConfig()
+	require.Equal(t, expConfgig, got)
+}
+
+func TestNewDefaultProcessor(t *testing.T) {
+	got := NewDefaultProcessor()
+	assert.NotNil(t, got)
+	assert.IsType(t, &processor{}, got)
+	assert.NotNil(t, got.Results())
+	assert.Nil(t, got.Errors())
+	assert.NotNil(t, got.Input())
 }
