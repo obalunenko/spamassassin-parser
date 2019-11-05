@@ -3,6 +3,13 @@ release:
     owner: oleg-balunenko
     name: spamassassin-parser
 
+env:
+  - GO111MODULE=on
+  - CGO_ENABLED=0
+before:
+  hooks:
+    - go mod tidy
+
 builds:
   - id: cli
     binary: spamassassin-parser-cli
@@ -14,8 +21,6 @@ builds:
       - amd64
       - 386
       - arm
-    env:
-      - CGO_ENABLED=0
     main: ./cmd/spamassassin-parser-cli
     ldflags: -s -w -X main.version={{.Version}} -X main.commit={{.ShortCommit}} -X main.date={{.Date}}
 
@@ -28,6 +33,11 @@ archives:
     format_overrides:
       - goos: windows
         format: zip
+    replacements:
+      amd64: 64-bit
+      386: 32-bit
+      darwin: macOS
+      linux: Tux
     name_template: "{{ .Binary }}-{{ .Version }}-{{ .Os }}-{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
     files:
       - LICENSE
