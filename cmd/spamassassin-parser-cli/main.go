@@ -3,12 +3,12 @@ package main
 import (
 	"context"
 	"flag"
-	"log"
 	"os"
 	"os/signal"
 	"time"
 
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/oleg-balunenko/spamassassin-parser/pkg/models"
 	"github.com/oleg-balunenko/spamassassin-parser/pkg/processor"
@@ -33,7 +33,10 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
-	pr := processor.NewProcessor()
+	cfg := processor.NewConfig()
+	cfg.Receive.Errors = true
+	pr := processor.NewProcessor(cfg)
+
 	go pr.Process(ctx)
 
 	file, err := os.Open(*reportFile)
@@ -45,10 +48,7 @@ func main() {
 	signal.Notify(stopChan, os.Interrupt)
 
 	go func() {
-		pr.Input() <- &models.ProcessorInput{
-			Data:   file,
-			TestID: file.Name(),
-		}
+		pr.Input() <- models.NewProcessorInput(file, file.Name())
 	}()
 
 LOOP:
@@ -56,15 +56,17 @@ LOOP:
 		select {
 		case res := <-pr.Results():
 			if res != nil {
-				if res.Error != nil {
-					log.Fatalf("%s: %v \n", res.TestID, res.Error)
-				}
 				s, err := utils.PrettyPrint(res.Report, "", "\t")
 				if err != nil {
 					log.Fatal(errors.Wrap(err, "failed to print report"))
 				}
 				log.Printf("[TestID: %s] processed: \n %s \n",
 					res.TestID, s)
+			}
+
+		case err := <-pr.Errors():
+			if err != nil {
+				log.Fatal(err)
 			}
 		case <-ctx.Done():
 			log.Println("context deadline")

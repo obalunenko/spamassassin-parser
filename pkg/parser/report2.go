@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"io"
 	"regexp"
-	"strconv"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -50,21 +49,14 @@ func (rp report2Parser) Parse(data io.Reader) (models.Report, error) {
 
 		matches := reType2.FindStringSubmatch(line)
 		if len(matches) != 0 {
-			sc, err := strconv.ParseFloat(matches[colScore], 64)
+			h, err := makeHeader(matches[colScore], matches[colTag], matches[colDescr])
 			if err != nil {
 				return emptyReport, errors.Wrapf(err,
-					"failed to parse score [line num: %d], [line: %s], score[%s]",
-					lnum, line, matches[colScore])
+					"failed to make header [line num: %d], [line: %s]", lnum, line)
 			}
 
-			sc = sanitizeScore(sc)
-			score = score + sc
-
-			r.SpamAssassin.Headers = append(r.SpamAssassin.Headers, models.Headers{
-				Score:       sc,
-				Tag:         matches[colTag],
-				Description: matches[colDescr],
-			})
+			score += h.Score
+			r.SpamAssassin.Headers = append(r.SpamAssassin.Headers, h)
 		} else {
 			last := len(r.SpamAssassin.Headers) - 1
 			if last >= 0 {
