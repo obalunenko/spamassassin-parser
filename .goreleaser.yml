@@ -6,6 +6,7 @@ release:
 env:
   - GO111MODULE=on
   - CGO_ENABLED=0
+  - GOPROXY=https://gocenter.io
 before:
   hooks:
     - go mod tidy
