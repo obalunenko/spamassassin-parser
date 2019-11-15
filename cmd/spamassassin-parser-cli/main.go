@@ -58,7 +58,8 @@ LOOP:
 			if res != nil {
 				s, err := utils.PrettyPrint(res.Report, "", "\t")
 				if err != nil {
-					log.Fatal(errors.Wrap(err, "failed to print report"))
+					log.Error(errors.Wrap(err, "failed to print report"))
+					return
 				}
 				log.Printf("[TestID: %s] processed: \n %s \n",
 					res.TestID, s)
@@ -66,7 +67,7 @@ LOOP:
 
 		case err := <-pr.Errors():
 			if err != nil {
-				log.Fatal(err)
+				log.Error(err)
 			}
 		case <-ctx.Done():
 			log.Println("context deadline")
