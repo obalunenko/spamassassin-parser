@@ -44,13 +44,17 @@ func main() {
 		log.Fatal(errors.Wrap(err, "failed to open file with report"))
 	}
 
-	stopChan := make(chan os.Signal, 1)
-	signal.Notify(stopChan, os.Interrupt)
-
 	go func() {
 		pr.Input() <- models.NewProcessorInput(file, file.Name())
 	}()
 
+	stopChan := make(chan os.Signal, 1)
+	signal.Notify(stopChan, os.Interrupt)
+
+	process(ctx, pr, stopChan)
+}
+
+func process(ctx context.Context, pr processor.Processor, stopChan <-chan os.Signal) {
 LOOP:
 	for {
 		select {

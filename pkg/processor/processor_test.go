@@ -13,32 +13,30 @@ import (
 	"github.com/oleg-balunenko/spamassassin-parser/pkg/utils"
 )
 
-func TestProcessReports(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+type want struct {
+	filepath string
+	wantErr  bool
+}
 
-	defer cancel()
+type input struct {
+	filepath string
+	testID   string
+}
 
-	cfg := NewConfig()
-	cfg.Receive.Errors = true
+type test struct {
+	input input
+	want  want
+}
 
-	processor := NewProcessor(cfg)
+type expected struct {
+	report  models.Report
+	wantErr bool
+}
 
-	go processor.Process(ctx)
+func casesTestProcessReports(t testing.TB) ([]test, map[string]expected) {
+	t.Helper()
 
-	type want struct {
-		filepath string
-		wantErr  bool
-	}
-
-	type input struct {
-		filepath string
-		testID   string
-	}
-
-	var tests = []struct {
-		input input
-		want  want
-	}{
+	tests := []test{
 		{
 			input: input{
 				filepath: filepath.Join("..", "testdata", "report1.txt"),
@@ -81,11 +79,6 @@ func TestProcessReports(t *testing.T) {
 		},
 	}
 
-	type expected struct {
-		report  models.Report
-		wantErr bool
-	}
-
 	expResults := make(map[string]expected, len(tests))
 
 	for _, tt := range tests {
@@ -97,6 +90,23 @@ func TestProcessReports(t *testing.T) {
 			wantErr: tt.want.wantErr,
 		}
 	}
+
+	return tests, expResults
+}
+
+func TestProcessReports(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+
+	defer cancel()
+
+	cfg := NewConfig()
+	cfg.Receive.Errors = true
+
+	processor := NewProcessor(cfg)
+
+	go processor.Process(ctx)
+
+	tests, expResults := casesTestProcessReports(t)
 
 	go func() {
 		for _, tt := range tests {
