@@ -19,7 +19,8 @@ jobs:
         - 1.13.x
       os:
         - linux
-      install:
+      before_script:
+        - echo "dependencies install"
         - env GO111MODULE=off
         - make dependencies
       script:
