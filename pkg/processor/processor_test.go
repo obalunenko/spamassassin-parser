@@ -108,6 +108,7 @@ func TestProcessReports(t *testing.T) {
 				TestID: tt.input.testID,
 			}
 		}
+
 		processor.Close()
 	}()
 
