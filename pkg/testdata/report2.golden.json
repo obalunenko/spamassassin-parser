@@ -1,6 +1,6 @@
 {
   "spamAssassin": {
-    "score": -0.2,
+    "score": 25.89,
     "headers": [
       {
         "score": 0,
@@ -41,6 +41,11 @@
         "score": 0.1,
         "tag": "DKIM_SIGNED",
         "description": "Message has a DKIM or DK signature, not necessarily valid"
+      },
+      {
+        "score": 26.09,
+        "tag": "URIBL_BLOCKED",
+        "description": "Test bug with score more than 10"
       }
     ]
   }

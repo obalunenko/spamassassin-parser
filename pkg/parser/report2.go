@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	reType2 = regexp.MustCompile(`(?m)([-]?\d.\d)[\s]+([[:word:]]+)\s+(.*[\n]?)`)
+	reType2 = regexp.MustCompile(`(?m)([-]?\d+.\d+)[\s]+([[:word:]]+)\s+(.*[\n]?)`)
 )
 
 type report2Parser struct{}

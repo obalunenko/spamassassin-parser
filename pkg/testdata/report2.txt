@@ -27,3 +27,4 @@ Spam detection software, running on the system "server.glocksoft.com",
                                 envelope-from domain
      0.1 DKIM_SIGNED            Message has a DKIM or DK signature, not necessarily
                                 valid
+    26.09 URIBL_BLOCKED         Test bug with score more than 10
