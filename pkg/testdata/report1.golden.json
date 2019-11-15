@@ -1,6 +1,6 @@
 {
   "spamAssassin": {
-    "score": -0.5,
+    "score": 14.69,
     "headers": [
       {
         "score": 0,
@@ -41,7 +41,13 @@
         "score": 0.0,
         "tag": "PDS_NO_HELO_DNS",
         "description": "High profile HELO but no A record"
+      },
+      {
+        "score": 15.19,
+        "tag": "SPF_PASS",
+        "description": "SPF: sender matches SPF record test of more than 10 score"
       }
+
     ]
   }
 }

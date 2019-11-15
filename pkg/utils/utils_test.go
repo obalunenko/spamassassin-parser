@@ -7,18 +7,39 @@ import (
 )
 
 func TestPrettyPrint(t *testing.T) {
-	type args struct {
-		v      interface{}
-		prefix string
-		indent string
-	}
+	tests := casesTestPrettyPrint(t)
 
-	tests := []struct {
-		name    string
-		args    args
-		want    string
-		wantErr bool
-	}{
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := PrettyPrint(tt.args.v, tt.args.prefix, tt.args.indent)
+			if tt.wantErr {
+				assert.Error(t, err)
+				return
+			}
+			assert.NoError(t, err)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+type args struct {
+	v      interface{}
+	prefix string
+	indent string
+}
+
+type test struct {
+	name    string
+	args    args
+	want    string
+	wantErr bool
+}
+
+func casesTestPrettyPrint(t testing.TB) []test {
+	t.Helper()
+
+	return []test{
 		{
 			name: "print struct",
 			args: args{
@@ -66,18 +87,5 @@ func TestPrettyPrint(t *testing.T) {
 			want:    "null\n",
 			wantErr: false,
 		},
-	}
-
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := PrettyPrint(tt.args.v, tt.args.prefix, tt.args.indent)
-			if tt.wantErr {
-				assert.Error(t, err)
-				return
-			}
-			assert.NoError(t, err)
-			assert.Equal(t, tt.want, got)
-		})
 	}
 }

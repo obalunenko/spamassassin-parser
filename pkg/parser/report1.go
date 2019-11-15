@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	reType1 = regexp.MustCompile(`([*])[\s]+([-]?\d.\d)?[\s](([[:word:]]+)?[\s](.*))`)
+	reType1 = regexp.MustCompile(`([*])[\s]+([-]?\d+.\d+)?[\s](([[:word:]]+)?[\s](.*))`)
 )
 
 type report1Parser struct{}
