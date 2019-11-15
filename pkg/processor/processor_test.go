@@ -137,7 +137,9 @@ LOOP:
 			}
 		case err := <-processor.Errors():
 			require.IsType(t, &models.Error{}, err, "unexpected error type")
-			merr := err.(*models.Error)
+			merr, ok := err.(*models.Error)
+			require.True(t, ok)
+
 			exp := expResults[merr.TestID]
 
 			if exp.wantErr {

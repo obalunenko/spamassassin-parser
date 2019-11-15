@@ -1,3 +1,4 @@
+// Package parser provides functionality to parse spamassassin result into json report.
 package parser
 
 import (

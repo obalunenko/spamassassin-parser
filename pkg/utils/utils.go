@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/pkg/errors"
@@ -39,7 +40,7 @@ func PrettyPrint(v interface{}, prefix string, indent string) (string, error) {
 func GetReaderFromFile(tb testing.TB, fPath string) io.Reader {
 	tb.Helper()
 
-	file, err := os.Open(fPath)
+	file, err := os.Open(filepath.Clean(fPath))
 	require.NoError(tb, err)
 
 	return file
@@ -49,7 +50,7 @@ func GetReaderFromFile(tb testing.TB, fPath string) io.Reader {
 func GetReportFromFile(tb testing.TB, fPath string) models.Report {
 	tb.Helper()
 
-	b, err := ioutil.ReadFile(fPath)
+	b, err := ioutil.ReadFile(filepath.Clean(fPath))
 	require.NoError(tb, err)
 
 	var rp models.Report
