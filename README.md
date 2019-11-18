@@ -6,6 +6,12 @@
 [![GoDoc](https://godoc.org/github.com/oleg-balunenko/spamassassin-parser?status.svg)](https://godoc.org/github.com/oleg-balunenko/spamassassin-parser)
 [![Latest release artifacts](https://img.shields.io/badge/artifacts-download-blue.svg)](https://github.com/oleg-balunenko/spamassassin-parser/releases/latest)
 # spamassassin-parser
+
+<p align="center">
+  <img src=".assets/assassingopher.png" alt="" width="300">
+  <br>
+</p>
+
 spamassassin-parser - a command line tool that parses spam filter reports into human readable json.
 
 ## Usage
