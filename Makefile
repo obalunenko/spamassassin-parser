@@ -94,5 +94,12 @@ dependencies:
 	./scripts/get-dependencies.sh
 .PHONY: dependencies
 
+## review code
+review:
+	${call colored, review is running...}
+	reviewdog -reporter=github-pr-check
+
+.PHONY: review
+
 .DEFAULT_GOAL := test
 
