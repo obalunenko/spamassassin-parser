@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.com/oleg-balunenko/spamassassin-parser.svg?branch=master)](https://travis-ci.com/oleg-balunenko/spamassassin-parser)
+[![https://github.com/oleg-balunenko/spamassassin-parser/actions?query=workflow%3AGo](https://github.com/oleg-balunenko/spamassassin-parser/Go/badge.svg?branch=master)](https://github.com/oleg-balunenko/spamassassin-parser/actions?query=workflow%3AGo)
 [![Coverage Status](https://coveralls.io/repos/github/oleg-balunenko/spamassassin-parser/badge.svg?branch=master)](https://coveralls.io/github/oleg-balunenko/spamassassin-parser?branch=master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/oleg-balunenko/spamassassin-parser)](https://goreportcard.com/report/github.com/oleg-balunenko/spamassassin-parser)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=oleg-balunenko_spamassassin-parser&metric=alert_status)](https://sonarcloud.io/dashboard?id=oleg-balunenko_spamassassin-parser)
