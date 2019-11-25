@@ -8,7 +8,7 @@
 # spamassassin-parser
 
 <p align="center">
-  <img src="https://github.com/oleg-balunenko/spamassassin-parser//blob/master/.assets/assassingopher.png" alt="" width="300">
+  <img src="https://github.com/oleg-balunenko/spamassassin-parser/blob/master/.assets/assassingopher.png" alt="" width="300">
   <br>
 </p>
 
