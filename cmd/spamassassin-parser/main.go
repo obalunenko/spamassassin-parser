@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"sync"
+	"syscall"
 
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
@@ -66,7 +67,7 @@ func main() {
 	}(ctx, fileChan)
 
 	stopChan := make(chan os.Signal, 1)
-	signal.Notify(stopChan, os.Interrupt)
+	signal.Notify(stopChan, os.Interrupt, os.Kill, syscall.SIGHUP, syscall.SIGTERM)
 
 	var wg sync.WaitGroup
 
