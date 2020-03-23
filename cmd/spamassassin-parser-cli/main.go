@@ -74,7 +74,11 @@ func main() {
 
 	wg.Add(waitRoutinesNum)
 
-	go process(ctx, &wg, pr, *outputDir, *processedDir)
+	go process(ctx, &wg, pr, dirsConfig{
+		input:   *inputDir,
+		out:     *outputDir,
+		archive: *processedDir,
+	})
 
 	s := <-stopChan
 	log.Infof("Signal [%s] received", s.String())
@@ -84,7 +88,13 @@ func main() {
 	wg.Wait()
 }
 
-func process(ctx context.Context, wg *sync.WaitGroup, pr processor.Processor, outDir string, processedDir string) {
+type dirsConfig struct {
+	input   string
+	out     string
+	archive string
+}
+
+func process(ctx context.Context, wg *sync.WaitGroup, pr processor.Processor, dirsCfg dirsConfig) {
 	defer wg.Done()
 
 	for {
@@ -96,17 +106,17 @@ func process(ctx context.Context, wg *sync.WaitGroup, pr processor.Processor, ou
 					log.Error(errors.Wrap(err, "failed to print report"))
 				}
 
-				log.Printf("[TestID: %s] processed: \n %s \n",
+				log.Printf("[TestID: %s] archive: \n %s \n",
 					res.TestID, s)
 
-				if err = fileutil.WriteFile(res.TestID, outDir, s); err != nil {
+				if err = fileutil.WriteFile(res.TestID, dirsCfg.out, s); err != nil {
 					log.Error(errors.Wrap(err, "failed to write file"))
 				}
 
 				log.Infof("Moving file %s to archive folder: %s", res.TestID, processedDir)
 
-				if err = fileutil.MoveFileToFolder(res.TestID, *inputDir, processedDir); err != nil {
-					log.Error(errors.Wrap(err, "failed to move processed file"))
+				if err = fileutil.MoveFileToFolder(res.TestID, dirsCfg.input, dirsCfg.archive); err != nil {
+					log.Error(errors.Wrap(err, "failed to move archive file"))
 				}
 
 				log.Info("File moved")
