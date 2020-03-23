@@ -4,6 +4,7 @@ package fileutil
 import (
 	"context"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -42,20 +43,43 @@ func WriteFile(fname, dir string, data string) error {
 	return nil
 }
 
-// MoveFileToFolder moves file from base dir to target
-func MoveFileToFolder(filename, fromDir, targetDir string) error {
-	filename = filepath.Base(filename)
-
-	if err := createDirIfNotExist(targetDir, os.ModePerm); err != nil {
-		return errors.Wrap(err, "failed to create  dir")
+// MoveFile moves file from base dir to target
+func MoveFile(name string, sourceDir, destDir string) error {
+	sourcePath := filepath.Join(sourceDir, name)
+	inputFile, err := os.Open(sourcePath)
+	if err != nil {
+		return errors.Wrap(err, "couldn't open source file")
 	}
 
-	targetFilename := filepath.Join(targetDir, filename+".tmp")
-	currentFilename := filepath.Join(fromDir, filename)
+	defer func() {
+		if err = inputFile.Close(); err != nil {
+			log.Errorf("failed to close inputFile: %v", err)
+		}
+	}()
 
-	if err := os.Rename(currentFilename, targetFilename); err != nil {
-		log.Warnf("Failed to move %s to folder: %v, does the desired folder exist?", filename, err)
-		return err
+	if err = createDirIfNotExist(destDir, os.ModePerm); err != nil {
+		return errors.Wrap(err, "failed to create destPath")
+	}
+
+	destPath := filepath.Join(destDir, name)
+	outputFile, err := os.Create(destPath)
+	if err != nil {
+		return fmt.Errorf("couldn't open dest file: %s", err)
+	}
+
+	defer func() {
+		if err = outputFile.Close(); err != nil {
+			log.Errorf("failed to close outputFile: %v", err)
+		}
+	}()
+
+	if _, err = io.Copy(outputFile, inputFile); err != nil {
+		return fmt.Errorf("writing to output file failed: %s", err)
+	}
+
+	// The copy was successful, so now delete the original file
+	if err = os.Remove(sourcePath); err != nil {
+		return fmt.Errorf("failed removing original file: %s", err)
 	}
 
 	return nil
