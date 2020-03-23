@@ -113,7 +113,7 @@ func process(ctx context.Context, wg *sync.WaitGroup, pr processor.Processor, di
 					log.Error(errors.Wrap(err, "failed to write file"))
 				}
 
-				log.Infof("Moving file %s to archive folder: %s", res.TestID, processedDir)
+				log.Infof("Moving file %s to archive folder: %s", res.TestID, dirsCfg.archive)
 
 				if err = fileutil.MoveFileToFolder(res.TestID, dirsCfg.input, dirsCfg.archive); err != nil {
 					log.Error(errors.Wrap(err, "failed to move archive file"))
