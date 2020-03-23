@@ -107,23 +107,40 @@ func (p *processor) Process(ctx context.Context) {
 			return
 		}
 
-		report, err := parser.ParseReport(in.Data)
-		if err != nil {
-			err = models.NewError(err, in.TestID)
+		p.processData(in)
+	}
+}
 
-			if p.errorsChan != nil {
-				p.errorsChan <- err
-			} else {
-				log.Error(err)
-			}
-		} else {
-			resp := models.NewProcessorResponse(in.TestID, report)
-			if p.resultsChan != nil {
-				p.resultsChan <- resp
-			} else {
-				log.Infof("TestID[%s]: processed\n %+v \n", resp.TestID, resp.Report)
-			}
+func (p *processor) processData(in *models.ProcessorInput) {
+	if in == nil {
+		return
+	}
+
+	defer func() {
+		if err := in.Data.Close(); err != nil {
+			log.Error(err)
 		}
+	}()
+
+	report, err := parser.ParseReport(in.Data)
+	if err != nil {
+		err = models.NewError(err, in.TestID)
+
+		if p.errorsChan != nil {
+			p.errorsChan <- err
+		} else {
+			log.Error(err)
+		}
+
+		return
+	}
+
+	resp := models.NewProcessorResponse(in.TestID, report)
+
+	if p.resultsChan != nil {
+		p.resultsChan <- resp
+	} else {
+		log.Infof("TestID[%s]: processed\n %+v \n", resp.TestID, resp.Report)
 	}
 }
 

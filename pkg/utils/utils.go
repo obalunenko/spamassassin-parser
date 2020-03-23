@@ -37,7 +37,7 @@ func PrettyPrint(v interface{}, prefix string, indent string) (string, error) {
 }
 
 // GetReaderFromFile is a test helper that opens passed filepath and returns reader.
-func GetReaderFromFile(tb testing.TB, fPath string) io.Reader {
+func GetReaderFromFile(tb testing.TB, fPath string) io.ReadCloser {
 	tb.Helper()
 
 	file, err := os.Open(filepath.Clean(fPath))

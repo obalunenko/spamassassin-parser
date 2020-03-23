@@ -26,12 +26,12 @@ type Headers struct {
 
 // ProcessorInput used for importing reports for processing.
 type ProcessorInput struct {
-	Data   io.Reader
+	Data   io.ReadCloser
 	TestID string
 }
 
 // NewProcessorInput constructs new ProcessorInput with passed parameters.
-func NewProcessorInput(data io.Reader, testID string) *ProcessorInput {
+func NewProcessorInput(data io.ReadCloser, testID string) *ProcessorInput {
 	return &ProcessorInput{Data: data, TestID: testID}
 }
 

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"io"
+	"io/ioutil"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -11,7 +12,7 @@ import (
 
 func TestNewProcessorInput(t *testing.T) {
 	type args struct {
-		data   io.Reader
+		data   io.ReadCloser
 		testID string
 	}
 
@@ -23,11 +24,11 @@ func TestNewProcessorInput(t *testing.T) {
 		{
 			name: "make processor input",
 			args: args{
-				data:   bytes.NewReader([]byte("test reader")),
+				data:   ioutil.NopCloser(bytes.NewReader([]byte("test reader"))),
 				testID: "test 1",
 			},
 			want: &ProcessorInput{
-				Data:   bytes.NewReader([]byte("test reader")),
+				Data:   ioutil.NopCloser(bytes.NewReader([]byte("test reader"))),
 				TestID: "test 1",
 			},
 		},
