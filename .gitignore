@@ -19,3 +19,4 @@ archive/
 input/
 output/
 bin/
+.env
