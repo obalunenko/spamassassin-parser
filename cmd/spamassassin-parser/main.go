@@ -1,4 +1,4 @@
-// spamassassin-parser-cli is a command line tool that shows how processing of reports works.
+// spamassassin-parser is a service that shows how processing of reports works.
 package main
 
 import (
@@ -115,7 +115,7 @@ func process(ctx context.Context, wg *sync.WaitGroup, pr processor.Processor, di
 
 				log.Infof("Moving file %s to archive folder: %s", res.TestID, dirsCfg.archive)
 
-				if err = fileutil.MoveFileToFolder(res.TestID, dirsCfg.input, dirsCfg.archive); err != nil {
+				if err = fileutil.MoveFile(res.TestID, dirsCfg.input, dirsCfg.archive); err != nil {
 					log.Error(errors.Wrap(err, "failed to move archive file"))
 				}
 
