@@ -14,8 +14,8 @@ import (
 
 	"github.com/oleg-balunenko/spamassassin-parser/internal/appconfig"
 	"github.com/oleg-balunenko/spamassassin-parser/internal/fileutil"
-	"github.com/oleg-balunenko/spamassassin-parser/pkg/models"
-	"github.com/oleg-balunenko/spamassassin-parser/pkg/processor"
+	"github.com/oleg-balunenko/spamassassin-parser/internal/models"
+	"github.com/oleg-balunenko/spamassassin-parser/internal/processor"
 	"github.com/oleg-balunenko/spamassassin-parser/pkg/utils"
 )
 
