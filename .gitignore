@@ -20,3 +20,4 @@ input/
 output/
 bin/
 .env
+data/

@@ -46,7 +46,8 @@ func WriteFile(fname, dir string, data string) error {
 // MoveFile moves file from base dir to target
 func MoveFile(name string, sourceDir, destDir string) error {
 	sourcePath := filepath.Join(sourceDir, name)
-	inputFile, err := os.Open(sourcePath)
+
+	inputFile, err := os.Open(filepath.Clean(sourcePath))
 	if err != nil {
 		return errors.Wrap(err, "couldn't open source file")
 	}
@@ -62,6 +63,7 @@ func MoveFile(name string, sourceDir, destDir string) error {
 	}
 
 	destPath := filepath.Join(destDir, name)
+
 	outputFile, err := os.Create(destPath)
 	if err != nil {
 		return fmt.Errorf("couldn't open dest file: %s", err)
