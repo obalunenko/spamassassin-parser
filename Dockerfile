@@ -28,12 +28,10 @@ RUN apk add -U --no-cache ca-certificates
 
 
 RUN mkdir -p /data/input && \
-    mkdir -p /data/output && \
+    mkdir -p /data/result && \
     mkdir -p /data/archive
-
-COPY ./scripts/run.sh /run.sh
 
 COPY --from=build-container /app/spamassassin-parser /spamassassin-parser
 
-ENTRYPOINT ["/run.sh"]
+ENTRYPOINT ["/spamassassin-parser"]
 
