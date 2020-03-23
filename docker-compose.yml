@@ -1,0 +1,24 @@
+version: "3.7"
+services:
+  spamassassin-parser:
+    restart: unless-stopped
+    container_name: spamassassin-parser
+    networks:
+      - spamassassin_dev
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+
+    volumes:
+      - ./data/input:/data/input
+
+
+volumes:
+  input:
+    driver: local
+
+networks:
+  spamassassin_dev:
+    driver: bridge
