@@ -11,7 +11,11 @@ type Config struct {
 	ReceiveErrors bool
 }
 
-// Load loads application configuration.
+// Load loads application configuration with default values if environment variables not set.
+// SPAMASSASSIN_INPUT - input
+// SPAMASSASSIN_OUTPUT - output
+// SPAMASSASSIN_ARCHIVE - archive
+// SPAMASSASSIN_RECEIVE_ERRORS - true
 func Load() Config {
 	return Config{
 		InputDir:      env.GetStringOrDefault("SPAMASSASSIN_INPUT", "input"),
