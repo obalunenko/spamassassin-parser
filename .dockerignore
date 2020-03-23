@@ -1,0 +1,11 @@
+.golangci.yml
+.gitattributes
+.gitignore
+.git
+.goreleaser.yml
+.reviewdog.yml
+.revive.yml
+.travis.yml
+docker-compose.yml
+sonar-project.properties.yml
+dist/
