@@ -56,7 +56,9 @@ func (rp report1Parser) Parse(data io.Reader) (models.Report, error) {
 			score += h.Score
 			r.SpamAssassin.Headers = append(r.SpamAssassin.Headers, h)
 		} else {
-			last := len(r.SpamAssassin.Headers) - 1
+			var indexShift = 1
+
+			last := len(r.SpamAssassin.Headers) - indexShift
 			if last >= 0 {
 				r.SpamAssassin.Headers[last].Description += " " + matches[colDescr]
 			}

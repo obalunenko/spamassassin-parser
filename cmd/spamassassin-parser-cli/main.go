@@ -6,18 +6,25 @@ import (
 	"flag"
 	"os"
 	"os/signal"
-	"time"
+	"path/filepath"
+	"sync"
 
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/oleg-balunenko/spamassassin-parser/internal/fileutil"
 	"github.com/oleg-balunenko/spamassassin-parser/pkg/models"
 	"github.com/oleg-balunenko/spamassassin-parser/pkg/processor"
 	"github.com/oleg-balunenko/spamassassin-parser/pkg/utils"
 )
 
 var (
-	reportFile = flag.String("report_file", "", "path to report file to process")
+	inputDir = flag.String("input_dir", "input",
+		"Path to directory where files for proccession are located")
+	outputDir = flag.String("output_dir", "output",
+		"Path to directory where parserd results will be stored")
+	processedDir = flag.String("processed_dir", "archive",
+		"Path to dir where processed files will be moved for history")
 )
 
 func main() {
@@ -27,11 +34,7 @@ func main() {
 
 	flag.Parse()
 
-	if *reportFile == "" {
-		log.Fatal("report_file not set")
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	cfg := processor.NewConfig()
@@ -40,23 +43,60 @@ func main() {
 
 	go pr.Process(ctx)
 
-	file, err := os.Open(*reportFile)
-	if err != nil {
-		log.Fatal(errors.Wrap(err, "failed to open file with report"))
-	}
+	fileChan := make(chan string)
+	go fileutil.PollDirectory(ctx, *inputDir, availableExtensions, fileChan)
 
-	go func() {
-		pr.Input() <- models.NewProcessorInput(file, file.Name())
-	}()
+	go func(ctx context.Context, fileChan chan string) {
+		for {
+			select {
+			case <-ctx.Done():
+				return
+
+			case reportFile := <-fileChan:
+				file, err := os.Open(filepath.Clean(filepath.Join(*inputDir, reportFile)))
+				if err != nil {
+					log.Fatal(errors.Wrap(err, "failed to open file with report"))
+				}
+
+				go func() {
+					pr.Input() <- models.NewProcessorInput(file, filepath.Base(file.Name()))
+				}()
+			}
+		}
+	}(ctx, fileChan)
 
 	stopChan := make(chan os.Signal, 1)
 	signal.Notify(stopChan, os.Interrupt)
 
-	process(ctx, pr, stopChan)
+	var wg sync.WaitGroup
+
+	waitRoutinesNum := 1
+
+	wg.Add(waitRoutinesNum)
+
+	go process(ctx, &wg, pr, dirsConfig{
+		input:   *inputDir,
+		out:     *outputDir,
+		archive: *processedDir,
+	})
+
+	s := <-stopChan
+	log.Infof("Signal [%s] received", s.String())
+
+	cancel()
+
+	wg.Wait()
 }
 
-func process(ctx context.Context, pr processor.Processor, stopChan <-chan os.Signal) {
-LOOP:
+type dirsConfig struct {
+	input   string
+	out     string
+	archive string
+}
+
+func process(ctx context.Context, wg *sync.WaitGroup, pr processor.Processor, dirsCfg dirsConfig) {
+	defer wg.Done()
+
 	for {
 		select {
 		case res := <-pr.Results():
@@ -64,24 +104,39 @@ LOOP:
 				s, err := utils.PrettyPrint(res.Report, "", "\t")
 				if err != nil {
 					log.Error(errors.Wrap(err, "failed to print report"))
-					return
 				}
-				log.Printf("[TestID: %s] processed: \n %s \n",
+
+				log.Printf("[TestID: %s] archive: \n %s \n",
 					res.TestID, s)
+
+				if err = fileutil.WriteFile(res.TestID, dirsCfg.out, s); err != nil {
+					log.Error(errors.Wrap(err, "failed to write file"))
+				}
+
+				log.Infof("Moving file %s to archive folder: %s", res.TestID, dirsCfg.archive)
+
+				if err = fileutil.MoveFileToFolder(res.TestID, dirsCfg.input, dirsCfg.archive); err != nil {
+					log.Error(errors.Wrap(err, "failed to move archive file"))
+				}
+
+				log.Info("File moved")
 			}
 
 		case err := <-pr.Errors():
 			if err != nil {
 				log.Error(err)
 			}
+
 		case <-ctx.Done():
-			log.Println("context deadline")
+			log.Println("context canceled")
+
 			pr.Close()
-			break LOOP
-		case <-stopChan:
-			log.Println("ctrl+c received")
-			pr.Close()
-			break LOOP
+
+			return
 		}
 	}
+}
+
+var availableExtensions = map[string]bool{
+	"txt": true,
 }

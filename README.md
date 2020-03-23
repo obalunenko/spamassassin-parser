@@ -21,8 +21,12 @@ spamassassin-parser-cli --help
 ```
 
 ```bash
-  -report_file string
-        path to report file to process
+  -input_dir string
+    	Path to directory where files for proccession are located (default "input")
+  -output_dir string
+    	Path to directory where parserd results will be stored (default "output")
+  -processed_dir string
+    	Path to dir where processed files will be moved for history (default "archive")
 ```
 
 ##Example
@@ -47,10 +51,14 @@ report1.txt file:
 Run cli
 
 ```bash
-spamassassin-parser-cli -report_file report1.txt
+spamassassin-parser-cli --input_dir=input --output_dir=output --processed_dir=archive 
 ```
+- Now application will poll the directory input for new files with txt extension.
+- Put a new file for procession.
+- After a file processed parsed result will be stored in the file at output directory and original file will be 
+moved to archive.
 
-Result:
+Result example:
 
 ```json
 {

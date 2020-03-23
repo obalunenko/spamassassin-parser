@@ -59,7 +59,9 @@ func (rp report2Parser) Parse(data io.Reader) (models.Report, error) {
 			score += h.Score
 			r.SpamAssassin.Headers = append(r.SpamAssassin.Headers, h)
 		} else {
-			last := len(r.SpamAssassin.Headers) - 1
+			var indexShift = 1
+
+			last := len(r.SpamAssassin.Headers) - indexShift
 			if last >= 0 {
 				line = strings.TrimSpace(line)
 				r.SpamAssassin.Headers[last].Description += " " + line

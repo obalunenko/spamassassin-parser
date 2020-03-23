@@ -95,5 +95,7 @@ func sanitizeScore(f float64) float64 {
 		f = 0
 	}
 
-	return math.Round(f*100) / 100
+	var scaleHundred float64 = 100
+
+	return math.Round(f*scaleHundred) / scaleHundred
 }
