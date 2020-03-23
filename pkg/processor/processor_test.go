@@ -95,7 +95,9 @@ func casesTestProcessReports(t testing.TB) ([]test, map[string]expected) {
 }
 
 func TestProcessReports(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	var secondsNum time.Duration = 5
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*secondsNum)
 
 	defer cancel()
 
@@ -151,7 +153,8 @@ LOOP:
 
 		case <-ctx.Done():
 			assert.Equal(t, len(expResults), processed, "deadline reached, but not all results received")
-			time.Sleep(time.Second * 2)
+			var secondsNum time.Duration = 2
+			time.Sleep(time.Second * secondsNum)
 			break LOOP
 		}
 	}

@@ -70,7 +70,9 @@ func main() {
 
 	var wg sync.WaitGroup
 
-	wg.Add(1)
+	waitRoutinesNum := 1
+
+	wg.Add(waitRoutinesNum)
 
 	go process(ctx, &wg, pr, *outputDir, *processedDir)
 
