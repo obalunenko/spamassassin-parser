@@ -1,7 +1,9 @@
 // spamassassin-parser is a command line tool that shows how processing of reports works.
 package main
 
-import "fmt"
+import (
+	log "github.com/sirupsen/logrus"
+)
 
 const unset = "unset"
 
@@ -12,8 +14,9 @@ var ( // build info
 )
 
 func printVersion() {
-	fmt.Printf("Version info: %s \n", version)
-	fmt.Printf("Build date: %s \n", date)
-	fmt.Printf("commit: %s \n", commit)
-	fmt.Println()
+	log.WithFields(log.Fields{
+		"version": version,
+		"date":    date,
+		"commit":  commit,
+	}).Info("Build info")
 }
