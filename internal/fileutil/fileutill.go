@@ -125,24 +125,26 @@ func PollDirectory(ctx context.Context, dir string, availableExtensions map[stri
 			}
 
 			for _, file := range files {
-				if !file.IsDir() {
-					ext := filepath.Ext(file.Name())
-					if ext != "" {
-						ext = strings.TrimPrefix(ext, ".")
-					}
+				if file.IsDir() {
+					continue
+				}
 
-					if file.Name() == lastFile {
-						log.Warnf("Cannot process the last known file: %s", lastFile)
-					}
+				ext := filepath.Ext(file.Name())
+				if ext != "" {
+					ext = strings.TrimPrefix(ext, ".")
+				}
 
-					_, ok := availableExtensions[ext]
-					if ok && file.Name() != lastFile {
-						fileChan <- file.Name()
+				if file.Name() == lastFile {
+					log.Warnf("Cannot process the last known file: %s", lastFile)
+				}
 
-						lastFile = file.Name()
+				_, ok := availableExtensions[ext]
+				if ok && file.Name() != lastFile {
+					fileChan <- file.Name()
 
-						break
-					}
+					lastFile = file.Name()
+
+					break
 				}
 			}
 		}

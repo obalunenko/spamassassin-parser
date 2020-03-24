@@ -12,7 +12,7 @@ func TestLoad(t *testing.T) {
 	t.Run("Load default", func(t *testing.T) {
 		want := Config{
 			InputDir:      "input",
-			ResultDir:     "output",
+			ResultDir:     "result",
 			ArchiveDir:    "archive",
 			ReceiveErrors: true,
 		}
@@ -29,7 +29,7 @@ func TestLoad(t *testing.T) {
 
 		want := Config{
 			InputDir:      inputDir,
-			ResultDir:     "output",
+			ResultDir:     "result",
 			ArchiveDir:    "archive",
 			ReceiveErrors: true,
 		}

@@ -103,13 +103,13 @@ docker-down:
 
 ## Docker compose up
 docker-up-dev:
-	docker-compose -f ./dev.docker-compose.yml up --build -d
+	docker-compose -f ./docker-compose.dev.yml up --build -d
 
 .PHONY: docker-up
 
 ## Docker compose down
 docker-down-dev:
-	docker-compose -f ./dev.docker-compose.yml down --volumes
+	docker-compose -f ./dev.docker-compose.dev.yml down --volumes
 
 .PHONY: docker-down
 
