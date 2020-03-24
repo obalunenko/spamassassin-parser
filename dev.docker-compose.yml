@@ -5,7 +5,9 @@ services:
     container_name: spamassassin-parser
     networks:
       - spamassassin_dev
-    image: olegbalunenko/spamassassin-parser
+    build:
+      context: .
+      dockerfile: Dockerfile
     env_file:
       - env
 

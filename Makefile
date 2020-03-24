@@ -106,5 +106,17 @@ docker-down:
 
 .PHONY: docker-down
 
+## Docker compose up
+docker-up-dev:
+	docker-compose -f ./dev.docker-compose.yml up --build -d
+
+.PHONY: docker-up
+
+## Docker compose down
+docker-down-dev:
+	docker-compose -f ./dev.docker-compose.yml down --volumes
+
+.PHONY: docker-down
+
 .DEFAULT_GOAL := test
 

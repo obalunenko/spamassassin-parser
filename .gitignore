@@ -19,5 +19,5 @@ archive/
 input/
 output/
 bin/
-.env
+env
 data/

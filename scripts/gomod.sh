@@ -2,3 +2,4 @@
 
 go mod tidy -v
 go mod vendor
+go mod verify

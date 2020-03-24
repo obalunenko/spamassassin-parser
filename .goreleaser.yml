@@ -9,7 +9,7 @@ env:
   - GOPROXY=https://gocenter.io
 before:
   hooks:
-    - go mod tidy
+    - go mod tidy -v
 
 builds:
   - id: service
@@ -26,13 +26,47 @@ builds:
     ldflags: -s -w -X main.version={{.Version}} -X main.commit={{.ShortCommit}} -X main.date={{.Date}}
 
 dockers:
-  - dockerfile: Dockerfile
+  # You can have multiple Docker images.
+  -
+    # GOOS of the built binary that should be used.
+    goos: linux
+
+    # GOARCH of the built binary that should be used.
+    goarch: amd64
+
+    # GOARM of the built binary that should be used.
+    goarm: ''
+
+    # Build IDs to gather the binaries from.
+    builds:
+      - service
+    # Name templates of the built binaries that should be used.
     binaries:
       - spamassassin-parser
     image_templates:
       - "olegbalunenko/spamassassin-parser:latest"
       - "olegbalunenko/spamassassin-parser:{{ .Tag }}"
       - "olegbalunenko/spamassassin-parser:v{{ .Major }}.{{ .Minor }}"
+
+    # Skips the docker push. Could be useful if you also do draft releases.
+    # If set to auto, the release will not be pushed to the docker repository
+    # in case there is an indicator for prerelease in the tag e.g. v1.0.0-rc1
+    # Defaults to false.
+    skip_push: false
+
+    # Path to the Dockerfile (from the project root).
+    dockerfile: releaser.Dockerfile
+
+
+    # If your Dockerfile copies files other than the binary itself,
+    # you should list them here as well.
+    # Note that goreleaser will create the same structure inside the temporary
+    # folder, so if you add `foo/bar.json` here, on your Dockerfile you can
+    # `COPY foo/bar.json /whatever.json`.
+    # Also note that the paths here are relative to the folder in which
+    # goreleaser is being run.
+    # This field does not support wildcards, you can add an entire folder here
+    # and use wildcards when you `COPY`/`ADD` in your Dockerfile.
 
 archives:
   - id: service
@@ -52,6 +86,8 @@ archives:
     files:
       - LICENSE
       - README.md
+      - docker-compose.yml
+      - env.example
 
 checksum:
   name_template: "{{ .ProjectName }}-{{ .Version }}-checksums.txt"
