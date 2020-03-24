@@ -1,6 +1,7 @@
 package env
 
 import (
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -54,4 +55,24 @@ func TestGetStringOrDefault(t *testing.T) {
 		got := GetStringOrDefault("TestGetBoolOrDefault", defVal)
 		assert.Equal(t, want, got)
 	})
+}
+
+func TestSetForTesting(t *testing.T) {
+	key := "TestSetForTesting"
+
+	original := os.Getenv(key)
+	assert.Equal(t, original, "", "Check that variable not set.")
+
+	// Set new value for variable.
+	reset := SetForTesting(t, key, "NEW_VAL")
+
+	val := os.Getenv(key)
+	assert.Equal(t, val, "NEW_VAL", "Check that variable changed value.")
+
+	// Check that after calling reset - variable returns to original state
+	reset()
+
+	val = os.Getenv(key)
+
+	assert.Equal(t, original, val, "Check that after calling reset - variable returns to original state")
 }
