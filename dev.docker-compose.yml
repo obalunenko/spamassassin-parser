@@ -8,8 +8,11 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    env_file:
-      - env
+    environment:
+      - SPAMASSASSIN_INPUT: "data/input"
+      - SPAMASSASSIN_OUTPUT: "data/result"
+      - SPAMASSASSIN_ARCHIVE: "data/archive"
+      - SPAMASSASSIN_RECEIVE_ERRORS: "true"
 
     volumes:
       - ./data/input:/data/input
