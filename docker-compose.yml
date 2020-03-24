@@ -11,10 +11,16 @@ services:
 
     volumes:
       - ./data/input:/data/input
+      - ./data/result:/data/result
+      - ./data/archive:/data/archive
 
 
 volumes:
   input:
+    driver: local
+  result:
+    driver: local
+  archive:
     driver: local
 
 networks:
