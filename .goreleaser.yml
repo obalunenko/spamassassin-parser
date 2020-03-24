@@ -25,6 +25,15 @@ builds:
     main: ./cmd/spamassassin-parser
     ldflags: -s -w -X main.version={{.Version}} -X main.commit={{.ShortCommit}} -X main.date={{.Date}}
 
+dockers:
+  - dockerfile: Dockerfile
+    binaries:
+      - spamassassin-parser
+    image_templates:
+      - "olegbalunenko/spamassassin-parser:latest"
+      - "olegbalunenko/spamassassin-parser:{{ .Tag }}"
+      - "olegbalunenko/spamassassin-parser:v{{ .Major }}.{{ .Minor }}"
+
 archives:
   - id: service
     builds:
