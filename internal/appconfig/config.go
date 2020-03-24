@@ -19,7 +19,7 @@ type Config struct {
 func Load() Config {
 	return Config{
 		InputDir:      env.GetStringOrDefault("SPAMASSASSIN_INPUT", "input"),
-		ResultDir:     env.GetStringOrDefault("SPAMASSASSIN_OUTPUT", "output"),
+		ResultDir:     env.GetStringOrDefault("SPAMASSASSIN_RESULT", "result"),
 		ArchiveDir:    env.GetStringOrDefault("SPAMASSASSIN_ARCHIVE", "archive"),
 		ReceiveErrors: env.GetBoolOrDefault("SPAMASSASSIN_RECEIVE_ERRORS", true),
 	}

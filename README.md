@@ -1,3 +1,5 @@
+# spamassassin-parser
+
 [![Build Status](https://travis-ci.com/oleg-balunenko/spamassassin-parser.svg?branch=master)](https://travis-ci.com/oleg-balunenko/spamassassin-parser)
 [![Coverage Status](https://coveralls.io/repos/github/oleg-balunenko/spamassassin-parser/badge.svg?branch=master)](https://coveralls.io/github/oleg-balunenko/spamassassin-parser?branch=master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/oleg-balunenko/spamassassin-parser)](https://goreportcard.com/report/github.com/oleg-balunenko/spamassassin-parser)
@@ -5,7 +7,6 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/8847ad100b3f415fa419430a58de1a2d)](https://www.codacy.com/manual/oleg.balunenko/spamassassin-parser?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=oleg-balunenko/spamassassin-parser&amp;utm_campaign=Badge_Grade)
 [![GoDoc](https://godoc.org/github.com/oleg-balunenko/spamassassin-parser?status.svg)](https://godoc.org/github.com/oleg-balunenko/spamassassin-parser)
 [![Latest release artifacts](https://img.shields.io/badge/artifacts-download-blue.svg)](https://github.com/oleg-balunenko/spamassassin-parser/releases/latest)
-# spamassassin-parser
 
 <p align="center">
   <img src="https://github.com/oleg-balunenko/spamassassin-parser/blob/master/.assets/assassingopher.png" alt="" width="300">
@@ -16,20 +17,22 @@ spamassassin-parser - a command line tool that parses spam filter reports into h
 
 ## Usage
 
-```bash
-spamassassin-parser-cli --help
+1. Download executable file: [![Latest release artifacts](https://img.shields.io/badge/artifacts-download-blue.svg)](https://github.com/oleg-balunenko/spamassassin-parser/releases/latest)
+2. Unrar archive.
+3. a. Run executable `spamassassin-parser`
+   b. Run docker-compose `docker-compose -f ./docker-compose.yml up --build -d`
+
+Environment variables used:
+
+```env
+  SPAMASSASSIN_INPUT: Path to directory where files for proccession are located (default "input")
+  SPAMASSASSIN_RESULT: Path to directory where parserd results will be stored (default "result")
+  SPAMASSASSIN_ARCHIVE: Path to dir where processed files will be moved for history (default "archive")
+  SPAMASSASSIN_RECEIVE_ERRORS: Boolean value to enable receive errors from processor, if false - will be   just logged (default: "true")
 ```
 
-```bash
-  -input_dir string
-    	Path to directory where files for proccession are located (default "input")
-  -output_dir string
-    	Path to directory where parserd results will be stored (default "output")
-  -processed_dir string
-    	Path to dir where processed files will be moved for history (default "archive")
-```
+## Example
 
-##Example
 report1.txt file:
 
 ```text
@@ -48,15 +51,15 @@ report1.txt file:
     *  0.0 PDS_NO_HELO_DNS High profile HELO but no A record
 ```
 
-Run cli
+Run service
 
 ```bash
-spamassassin-parser-cli --input_dir=input --output_dir=output --processed_dir=archive 
+spamassassin-parser
 ```
+
 - Now application will poll the directory input for new files with txt extension.
 - Put a new file for procession.
-- After a file processed parsed result will be stored in the file at output directory and original file will be 
-moved to archive.
+- After a file processed parsed result will be stored in the file at output directory and original file will be moved to archive.
 
 Result example:
 

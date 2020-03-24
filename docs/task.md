@@ -11,16 +11,15 @@
 
 написать модуль (модули), имеющие
 
-1. функцию обработки репорта
-2. функцию чтения из канала (просто выводить полученные данные в консоль)
+    1. функцию обработки репорта
+    2. функцию чтения из канала (просто выводить полученные данные в консоль)
 
 На выходе должно быть : скармливаем репорт + testID, в консоли видим JSON
 
 Пример Spamassassin репорта (2 варианта header1 и header2):
 
-``` txt
-
-    header1 = ` * -0.0 RCVD_IN_DNSWL_NONE RBL: Sender listed at
+    ``` txt
+header1 = ` * -0.0 RCVD_IN_DNSWL_NONE RBL: Sender listed at
     *      https://www.dnswl.org/, no trust
     *      [209.85.161.101 listed in list.dnswl.org]
     * -0.0 SPF_PASS SPF: sender matches SPF record
@@ -34,10 +33,9 @@
     *      [0-0=1|1=LG DACOM CORPORATION|2=6.8|3=6.8|4=2661|6=0|7=19|8=3319569|9=71889|20=mail-yw1-f101|21=google.com|22=Y|23=8.0|24=8.0|25=0|40=4.1|41=4.4|43=4.3|44=5.6|45=N|46=18|48=24|53=US|54=-97.822|55=37.751|56=1000|57=1571272183]
     *  0.0 PDS_NO_HELO_DNS High profile HELO but no A record
 
-`
-```
+` ```
 
-``` txt
+    ``` txt
     header2 = `Spam detection software, running on the system "server.glocksoft.com",
     has NOT identified this incoming email as spam.  The original
     message has been attached to this so you can view it or label
@@ -68,54 +66,52 @@
      0.1 DKIM_SIGNED            Message has a DKIM or DK signature, not necessarily
                                 valid
 
-`
-```
+` ```
 
 //----------------------------------------------------------------------------------------------------------
 
 Output:
 
-``` txt
-
-"spamAssassin" : {
-"score" : 1,
-"headers" : [
-{
-"score" : 0,
-"tag" : "SPF_PASS",
-"description" : "SPF: sender matches SPF record"
-},
-{
-"score" : 0,
-"tag" : "T_KAM_HTML_FONT_INVALID",
-"description" : "BODY: Test for Invalidly Named or Formatted Colors in HTML"
-},
-{
-"score" : 0,
-"tag" : "HTML_MESSAGE",
-"description" : "BODY: HTML included in message"
-},
-{
-"score" : 1.1,
-"tag" : "KAM_REALLYHUGEIMGSRC",
-"description" : "RAW: Spam with image tags with ridiculously huge http urls"
-},
-{
-"score" : -0.1,
-"tag" : "DKIM_VALID_AU",
-"description" : "Message has a valid DKIM or DK signature from author's domain"
-},
-{
-"score" : -0.1,
-"tag" : "DKIM_VALID",
-"description" : "Message has at least one valid DKIM or DK signature"
-},
-{
-"score" : 0.1,
-"tag" : "DKIM_SIGNED",
-"description" : "Message has a DKIM or DK signature, not necessarily valid"
-}
-]
-}
-
-```
+    ``` json
+    {
+    "spamAssassin":{
+      "score":1,
+      "headers":[
+         {
+            "score":0,
+            "tag":"SPF_PASS",
+            "description":"SPF: sender matches SPF record"
+         },
+         {
+            "score":0,
+            "tag":"T_KAM_HTML_FONT_INVALID",
+            "description":"BODY: Test for Invalidly Named or Formatted Colors in HTML"
+         },
+         {
+            "score":0,
+            "tag":"HTML_MESSAGE",
+            "description":"BODY: HTML included in message"
+         },
+         {
+            "score":1.1,
+            "tag":"KAM_REALLYHUGEIMGSRC",
+            "description":"RAW: Spam with image tags with ridiculously huge http urls"
+         },
+         {
+            "score":-0.1,
+            "tag":"DKIM_VALID_AU",
+            "description":"Message has a valid DKIM or DK signature from author's domain"
+         },
+         {
+            "score":-0.1,
+            "tag":"DKIM_VALID",
+            "description":"Message has at least one valid DKIM or DK signature"
+         },
+         {
+            "score":0.1,
+            "tag":"DKIM_SIGNED",
+            "description":"Message has a DKIM or DK signature, not necessarily valid"
+         }
+      ]
+   }
+}```

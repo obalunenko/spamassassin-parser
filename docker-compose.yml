@@ -8,7 +8,7 @@ services:
     image: olegbalunenko/spamassassin-parser
     environment:
       SPAMASSASSIN_INPUT: "data/input"
-      SPAMASSASSIN_OUTPUT: "data/result"
+      SPAMASSASSIN_RESULT: "data/result"
       SPAMASSASSIN_ARCHIVE: "data/archive"
       SPAMASSASSIN_RECEIVE_ERRORS: "true"
 

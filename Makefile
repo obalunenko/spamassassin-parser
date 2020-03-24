@@ -23,11 +23,6 @@ help:
 
 
 
-## Cross system compile
-cross-compile:
-	./scripts/cross-compile.sh
-.PHONY: cross-compile
-
 ## Compile executable
 compile:
 	./scripts/compile.sh
