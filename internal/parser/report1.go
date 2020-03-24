@@ -5,23 +5,24 @@ import (
 	"bufio"
 	"io"
 	"regexp"
-	"strings"
 
 	"github.com/pkg/errors"
 
-	"github.com/oleg-balunenko/spamassassin-parser/pkg/models"
+	"github.com/oleg-balunenko/spamassassin-parser/internal/models"
 )
 
 var (
-	reType2 = regexp.MustCompile(`(?m)([-]?\d+.\d+)[\s]+([[:word:]]+)\s+(.*[\n]?)`)
+	reType1 = regexp.MustCompile(`([*])[\s]+([-]?\d+.\d+)?[\s](([[:word:]]+)?[\s](.*))`)
 )
 
-type report2Parser struct{}
+type report1Parser struct{}
 
-func (rp report2Parser) Parse(data io.Reader) (models.Report, error) {
+func (rp report1Parser) Parse(data io.Reader) (models.Report, error) {
 	const (
 		colFullMatch = iota
+		colAsterisk
 		colScore
+		colTagWithDescr
 		colTag
 		colDescr
 	)
@@ -30,7 +31,6 @@ func (rp report2Parser) Parse(data io.Reader) (models.Report, error) {
 		r     models.Report
 		score float64
 		lnum  int
-		start bool
 	)
 
 	sc := bufio.NewScanner(data)
@@ -40,16 +40,13 @@ func (rp report2Parser) Parse(data io.Reader) (models.Report, error) {
 
 		line := sc.Text()
 
-		if !start {
-			if strings.Contains(line, "----") {
-				start = true
-			}
-
-			continue
+		matches := reType1.FindStringSubmatch(line)
+		if len(matches) == 0 {
+			return emptyReport, errors.Errorf("failed to find matches for regex [line num: %d], [line: %s]",
+				lnum, line)
 		}
 
-		matches := reType2.FindStringSubmatch(line)
-		if len(matches) != 0 {
+		if matches[colScore] != "" {
 			h, err := makeHeader(matches[colScore], matches[colTag], matches[colDescr])
 			if err != nil {
 				return emptyReport, errors.Wrapf(err,
@@ -63,8 +60,7 @@ func (rp report2Parser) Parse(data io.Reader) (models.Report, error) {
 
 			last := len(r.SpamAssassin.Headers) - indexShift
 			if last >= 0 {
-				line = strings.TrimSpace(line)
-				r.SpamAssassin.Headers[last].Description += " " + line
+				r.SpamAssassin.Headers[last].Description += " " + matches[colDescr]
 			}
 		}
 	}

@@ -4,7 +4,7 @@ sudo: false
 install: true
 env:
   global:
-    - MYAPP=spamassassin-parser-cli
+    - MYAPP=spamassassin-parser
     - MYEMAIL=oleg.balunenko@gmail.com
     - GOPROXY=https://goproxy.io
 addons:

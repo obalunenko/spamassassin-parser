@@ -12,8 +12,8 @@ before:
     - go mod tidy
 
 builds:
-  - id: cli
-    binary: spamassassin-parser-cli
+  - id: service
+    binary: spamassassin-parser
     goos:
       - darwin
       - windows
@@ -22,13 +22,22 @@ builds:
       - amd64
       - 386
       - arm
-    main: ./cmd/spamassassin-parser-cli
+    main: ./cmd/spamassassin-parser
     ldflags: -s -w -X main.version={{.Version}} -X main.commit={{.ShortCommit}} -X main.date={{.Date}}
 
+dockers:
+  - dockerfile: Dockerfile
+    binaries:
+      - spamassassin-parser
+    image_templates:
+      - "olegbalunenko/spamassassin-parser:latest"
+      - "olegbalunenko/spamassassin-parser:{{ .Tag }}"
+      - "olegbalunenko/spamassassin-parser:v{{ .Major }}.{{ .Minor }}"
+
 archives:
-  - id: cli
+  - id: service
     builds:
-      - cli
+      - service
     format: tar.gz
     wrap_in_directory: true
     format_overrides:

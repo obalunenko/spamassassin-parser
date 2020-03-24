@@ -13,7 +13,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/require"
 
-	"github.com/oleg-balunenko/spamassassin-parser/pkg/models"
+	"github.com/oleg-balunenko/spamassassin-parser/internal/models"
 )
 
 // PrettyPrint appends to passed struct indents and returns a human readable form of struct.

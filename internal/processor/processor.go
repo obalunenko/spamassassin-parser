@@ -7,8 +7,8 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/oleg-balunenko/spamassassin-parser/pkg/models"
-	"github.com/oleg-balunenko/spamassassin-parser/pkg/parser"
+	"github.com/oleg-balunenko/spamassassin-parser/internal/models"
+	"github.com/oleg-balunenko/spamassassin-parser/internal/parser"
 )
 
 // Processor manages spamassassin reports processing.

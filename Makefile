@@ -52,6 +52,11 @@ test:
 	./scripts/run-tests.sh
 .PHONY: test
 
+## Test all packages
+test-docker:
+	./scripts/run-tests-docker.sh
+.PHONY: test-docker
+
 ## Test coverage
 test-cover:
 	./scripts/coverage.sh
@@ -60,7 +65,6 @@ test-cover:
 new-version: lint test compile
 	./scripts/version.sh
 .PHONY: new-version
-
 
 ## Release
 release:
@@ -81,7 +85,26 @@ dependencies:
 review:
 	reviewdog -reporter=github-pr-check
 
-.PHONY: review
+## Sync dependencies
+gomod:
+	./scripts/gomod.sh
+.PHONY: gomod
+
+vet:
+	./scripts/vet.sh
+.PHONY: vet
+
+## Docker compose up
+docker-up:
+	docker-compose -f ./docker-compose.yml up --build -d
+
+.PHONY: docker-up
+
+## Docker compose down
+docker-down:
+	docker-compose -f ./docker-compose.yml down --volumes
+
+.PHONY: docker-down
 
 .DEFAULT_GOAL := test
 

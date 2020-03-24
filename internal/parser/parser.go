@@ -11,7 +11,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/oleg-balunenko/spamassassin-parser/pkg/models"
+	"github.com/oleg-balunenko/spamassassin-parser/internal/models"
 )
 
 var (

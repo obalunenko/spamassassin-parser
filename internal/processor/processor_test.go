@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/oleg-balunenko/spamassassin-parser/pkg/models"
+	"github.com/oleg-balunenko/spamassassin-parser/internal/models"
 	"github.com/oleg-balunenko/spamassassin-parser/pkg/utils"
 )
 

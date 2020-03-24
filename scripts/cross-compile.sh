@@ -4,7 +4,7 @@ set -e
 
 
 REPO_ROOT=$(git rev-parse --show-toplevel)
-APP="spamassassin-parser-cli"
+APP="spamassassin-parser"
 VERSION=$(git describe --tags --always "$(git rev-list --tags --max-count=1)")"-local"
 COMMIT_HASH=$(git rev-parse --short HEAD 2>/dev/null)
 DATE=$(date "+%Y-%m-%d")
@@ -18,7 +18,7 @@ if [[ "$(pwd)" != "${REPO_ROOT}" ]]; then
 fi
 
 GO_BUILD_LDFLAGS="-s -w -X 'main.commit=${COMMIT_HASH}' -X 'main.date=${DATE}' -X 'main.version=${VERSION}'"
-GO_BUILD_PACKAGE="github.com/oleg-balunenko/spamassassin-parser/cmd/spamassassin-parser-cli/."
+GO_BUILD_PACKAGE="github.com/oleg-balunenko/spamassassin-parser/cmd/spamassassin-parser/."
 
 if [[ -z "${BUILD_PLATFORMS}" ]]; then
     BUILD_PLATFORMS="linux windows darwin"

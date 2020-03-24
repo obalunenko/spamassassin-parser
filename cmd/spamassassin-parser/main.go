@@ -1,30 +1,22 @@
-// spamassassin-parser-cli is a command line tool that shows how processing of reports works.
+// spamassassin-parser is a service that shows how processing of reports works.
 package main
 
 import (
 	"context"
-	"flag"
 	"os"
 	"os/signal"
 	"path/filepath"
 	"sync"
+	"syscall"
 
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/oleg-balunenko/spamassassin-parser/internal/appconfig"
 	"github.com/oleg-balunenko/spamassassin-parser/internal/fileutil"
-	"github.com/oleg-balunenko/spamassassin-parser/pkg/models"
-	"github.com/oleg-balunenko/spamassassin-parser/pkg/processor"
+	"github.com/oleg-balunenko/spamassassin-parser/internal/models"
+	"github.com/oleg-balunenko/spamassassin-parser/internal/processor"
 	"github.com/oleg-balunenko/spamassassin-parser/pkg/utils"
-)
-
-var (
-	inputDir = flag.String("input_dir", "input",
-		"Path to directory where files for proccession are located")
-	outputDir = flag.String("output_dir", "output",
-		"Path to directory where parserd results will be stored")
-	processedDir = flag.String("processed_dir", "archive",
-		"Path to dir where processed files will be moved for history")
 )
 
 func main() {
@@ -32,19 +24,21 @@ func main() {
 
 	printVersion()
 
-	flag.Parse()
-
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	cfg := processor.NewConfig()
-	cfg.Receive.Errors = true
-	pr := processor.NewProcessor(cfg)
+	appCfg := appconfig.Load()
+
+	pcCfg := processor.NewConfig()
+	pcCfg.Receive.Errors = appCfg.ReceiveErrors
+
+	pr := processor.NewProcessor(pcCfg)
 
 	go pr.Process(ctx)
 
 	fileChan := make(chan string)
-	go fileutil.PollDirectory(ctx, *inputDir, availableExtensions, fileChan)
+
+	go fileutil.PollDirectory(ctx, appCfg.InputDir, availableExtensions, fileChan)
 
 	go func(ctx context.Context, fileChan chan string) {
 		for {
@@ -53,7 +47,7 @@ func main() {
 				return
 
 			case reportFile := <-fileChan:
-				file, err := os.Open(filepath.Clean(filepath.Join(*inputDir, reportFile)))
+				file, err := os.Open(filepath.Clean(filepath.Join(appCfg.InputDir, reportFile)))
 				if err != nil {
 					log.Fatal(errors.Wrap(err, "failed to open file with report"))
 				}
@@ -66,7 +60,7 @@ func main() {
 	}(ctx, fileChan)
 
 	stopChan := make(chan os.Signal, 1)
-	signal.Notify(stopChan, os.Interrupt)
+	signal.Notify(stopChan, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 
 	var wg sync.WaitGroup
 
@@ -74,11 +68,7 @@ func main() {
 
 	wg.Add(waitRoutinesNum)
 
-	go process(ctx, &wg, pr, dirsConfig{
-		input:   *inputDir,
-		out:     *outputDir,
-		archive: *processedDir,
-	})
+	go process(ctx, &wg, pr, appCfg)
 
 	s := <-stopChan
 	log.Infof("Signal [%s] received", s.String())
@@ -88,13 +78,7 @@ func main() {
 	wg.Wait()
 }
 
-type dirsConfig struct {
-	input   string
-	out     string
-	archive string
-}
-
-func process(ctx context.Context, wg *sync.WaitGroup, pr processor.Processor, dirsCfg dirsConfig) {
+func process(ctx context.Context, wg *sync.WaitGroup, pr processor.Processor, dirsCfg appconfig.Config) {
 	defer wg.Done()
 
 	for {
@@ -109,13 +93,13 @@ func process(ctx context.Context, wg *sync.WaitGroup, pr processor.Processor, di
 				log.Printf("[TestID: %s] archive: \n %s \n",
 					res.TestID, s)
 
-				if err = fileutil.WriteFile(res.TestID, dirsCfg.out, s); err != nil {
+				if err = fileutil.WriteFile(res.TestID, dirsCfg.ResultDir, s); err != nil {
 					log.Error(errors.Wrap(err, "failed to write file"))
 				}
 
-				log.Infof("Moving file %s to archive folder: %s", res.TestID, dirsCfg.archive)
+				log.Infof("Moving file %s to archive folder: %s", res.TestID, dirsCfg.ArchiveDir)
 
-				if err = fileutil.MoveFileToFolder(res.TestID, dirsCfg.input, dirsCfg.archive); err != nil {
+				if err = fileutil.MoveFile(res.TestID, dirsCfg.InputDir, dirsCfg.ArchiveDir); err != nil {
 					log.Error(errors.Wrap(err, "failed to move archive file"))
 				}
 
