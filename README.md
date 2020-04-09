@@ -10,6 +10,7 @@
 [![Latest release artifacts](https://img.shields.io/github/v/release/oleg-balunenko/spamassassin-parser)](https://github.com/oleg-balunenko/spamassassin-parser/releases/latest)
 [![Docker pulls](https://img.shields.io/docker/pulls/olegbalunenko/spamassassin-parser)](https://hub.docker.com/r/olegbalunenko/spamassassin-parser)
 [![License](https://img.shields.io/github/license/oleg-balunenko/spamassassin-parser)](/LICENSE)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Foleg-balunenko%2Fspamassassin-parser.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Foleg-balunenko%2Fspamassassin-parser?ref=badge_shield)
 
 <p align="center">
   <img src="https://github.com/oleg-balunenko/spamassassin-parser/blob/master/.assets/assassingopher.png" alt="" width="300">
@@ -115,3 +116,7 @@ Result example:
   }
 }
 ```
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Foleg-balunenko%2Fspamassassin-parser.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Foleg-balunenko%2Fspamassassin-parser?ref=badge_large)
