@@ -1,4 +1,4 @@
-package env_test
+package getenv_test
 
 import (
 	"os"
@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/oleg-balunenko/spamassassin-parser/pkg/env"
+	"github.com/oleg-balunenko/spamassassin-parser/pkg/getenv"
 )
 
 func TestGetBoolOrDefault(t *testing.T) {
@@ -16,20 +16,20 @@ func TestGetBoolOrDefault(t *testing.T) {
 	)
 
 	t.Run("Env not set - default returned", func(t *testing.T) {
-		got := env.GetBoolOrDefault(key, defVal)
+		got := getenv.BoolOrDefault(key, defVal)
 		assert.Equal(t, defVal, got)
 	})
 
 	t.Run("Env set - value from env returned", func(t *testing.T) {
 		want := false
 
-		reset := env.SetForTesting(t, key, want)
+		reset := getenv.SetForTesting(t, key, want)
 
 		defer func() {
 			reset()
 		}()
 
-		got := env.GetBoolOrDefault("TestGetBoolOrDefault", defVal)
+		got := getenv.BoolOrDefault("TestGetBoolOrDefault", defVal)
 		assert.Equal(t, want, got)
 	})
 }
@@ -41,20 +41,20 @@ func TestGetStringOrDefault(t *testing.T) {
 	)
 
 	t.Run("Env not set - default returned", func(t *testing.T) {
-		got := env.GetStringOrDefault(key, defVal)
+		got := getenv.StringOrDefault(key, defVal)
 		assert.Equal(t, defVal, got)
 	})
 
 	t.Run("Env set - value from env returned", func(t *testing.T) {
 		want := "MyVal"
 
-		reset := env.SetForTesting(t, key, want)
+		reset := getenv.SetForTesting(t, key, want)
 
 		defer func() {
 			reset()
 		}()
 
-		got := env.GetStringOrDefault("TestGetBoolOrDefault", defVal)
+		got := getenv.StringOrDefault("TestGetBoolOrDefault", defVal)
 		assert.Equal(t, want, got)
 	})
 }
@@ -66,7 +66,7 @@ func TestSetForTesting(t *testing.T) {
 	assert.Equal(t, original, "", "Check that variable not set.")
 
 	// Set new value for variable.
-	reset := env.SetForTesting(t, key, "NEW_VAL")
+	reset := getenv.SetForTesting(t, key, "NEW_VAL")
 
 	val := os.Getenv(key)
 	assert.Equal(t, val, "NEW_VAL", "Check that variable changed value.")

@@ -1,7 +1,7 @@
 // Package appconfig provide application configuration.
 package appconfig
 
-import "github.com/oleg-balunenko/spamassassin-parser/pkg/env"
+import "github.com/oleg-balunenko/spamassassin-parser/pkg/getenv"
 
 // Config stores application configuration.
 type Config struct {
@@ -19,9 +19,9 @@ type Config struct {
 //
 func Load() Config {
 	return Config{
-		InputDir:      env.GetStringOrDefault("SPAMASSASSIN_INPUT", "input"),
-		ResultDir:     env.GetStringOrDefault("SPAMASSASSIN_RESULT", "result"),
-		ArchiveDir:    env.GetStringOrDefault("SPAMASSASSIN_ARCHIVE", "archive"),
-		ReceiveErrors: env.GetBoolOrDefault("SPAMASSASSIN_RECEIVE_ERRORS", true),
+		InputDir:      getenv.StringOrDefault("SPAMASSASSIN_INPUT", "input"),
+		ResultDir:     getenv.StringOrDefault("SPAMASSASSIN_RESULT", "result"),
+		ArchiveDir:    getenv.StringOrDefault("SPAMASSASSIN_ARCHIVE", "archive"),
+		ReceiveErrors: getenv.BoolOrDefault("SPAMASSASSIN_RECEIVE_ERRORS", true),
 	}
 }

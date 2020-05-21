@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/oleg-balunenko/spamassassin-parser/internal/appconfig"
-	"github.com/oleg-balunenko/spamassassin-parser/pkg/env"
+	"github.com/oleg-balunenko/spamassassin-parser/pkg/getenv"
 )
 
 func TestLoad(t *testing.T) {
@@ -25,7 +25,7 @@ func TestLoad(t *testing.T) {
 
 	t.Run("Load with set env variables", func(t *testing.T) {
 		inputDir := "datainput"
-		reset := env.SetForTesting(t, "SPAMASSASSIN_INPUT", inputDir)
+		reset := getenv.SetForTesting(t, "SPAMASSASSIN_INPUT", inputDir)
 		defer reset()
 
 		want := appconfig.Config{
