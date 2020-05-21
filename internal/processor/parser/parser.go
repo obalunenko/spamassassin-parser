@@ -4,14 +4,13 @@ package parser
 import (
 	"bufio"
 	"bytes"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"math"
 	"strings"
 
-	"github.com/pkg/errors"
-
-	"github.com/oleg-balunenko/spamassassin-parser/internal/models"
+	"github.com/oleg-balunenko/spamassassin-parser/internal/processor/models"
 )
 
 var (
@@ -32,12 +31,11 @@ func newParser(rt reportType) (Parser, error) {
 		return report2Parser{}, nil
 	}
 
-	return nil, errors.Errorf("not implemented parser for report: %s", rt.String())
+	return nil, fmt.Errorf("not implemented parser for report: %s", rt.String())
 }
 
 //go:generate stringer -type=reportType
 
-// reportType
 type reportType int
 
 const (
@@ -56,18 +54,18 @@ func (i reportType) Valid() bool {
 func ParseReport(data io.Reader) (models.Report, error) {
 	b, err := ioutil.ReadAll(data)
 	if err != nil {
-		return emptyReport, errors.Wrap(err, "failed to read from reader")
+		return emptyReport, fmt.Errorf("failed to read from reader: %w", err)
 	}
 
 	rt := getReportType(bytes.NewReader(b))
 
 	if !rt.Valid() {
-		return emptyReport, errors.New("invalid report type")
+		return emptyReport, fmt.Errorf("invalid report type: %w", err)
 	}
 
 	parser, err := newParser(rt)
 	if err != nil {
-		return emptyReport, errors.Wrap(err, "failed to get parser")
+		return emptyReport, fmt.Errorf("failed to get parser: %w", err)
 	}
 
 	return parser.Parse(bytes.NewReader(b))

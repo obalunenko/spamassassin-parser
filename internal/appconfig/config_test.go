@@ -1,23 +1,24 @@
-package appconfig
+package appconfig_test
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/oleg-balunenko/spamassassin-parser/internal/appconfig"
 	"github.com/oleg-balunenko/spamassassin-parser/pkg/env"
 )
 
 func TestLoad(t *testing.T) {
 	t.Run("Load default", func(t *testing.T) {
-		want := Config{
+		want := appconfig.Config{
 			InputDir:      "input",
 			ResultDir:     "result",
 			ArchiveDir:    "archive",
 			ReceiveErrors: true,
 		}
 
-		got := Load()
+		got := appconfig.Load()
 
 		assert.Equal(t, want, got)
 	})
@@ -27,14 +28,14 @@ func TestLoad(t *testing.T) {
 		reset := env.SetForTesting(t, "SPAMASSASSIN_INPUT", inputDir)
 		defer reset()
 
-		want := Config{
+		want := appconfig.Config{
 			InputDir:      inputDir,
 			ResultDir:     "result",
 			ArchiveDir:    "archive",
 			ReceiveErrors: true,
 		}
 
-		got := Load()
+		got := appconfig.Load()
 
 		assert.Equal(t, want, got)
 	})

@@ -16,6 +16,7 @@ type Config struct {
 // SPAMASSASSIN_OUTPUT - output
 // SPAMASSASSIN_ARCHIVE - archive
 // SPAMASSASSIN_RECEIVE_ERRORS - true
+//
 func Load() Config {
 	return Config{
 		InputDir:      env.GetStringOrDefault("SPAMASSASSIN_INPUT", "input"),

@@ -1,9 +1,11 @@
-package utils
+package utils_test
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/oleg-balunenko/spamassassin-parser/pkg/utils"
 )
 
 func TestPrettyPrint(t *testing.T) {
@@ -12,7 +14,7 @@ func TestPrettyPrint(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := PrettyPrint(tt.args.v, tt.args.prefix, tt.args.indent)
+			got, err := utils.PrettyPrint(tt.args.v, tt.args.prefix, tt.args.indent)
 			if tt.wantErr {
 				assert.Error(t, err)
 				return

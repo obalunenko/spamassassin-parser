@@ -38,6 +38,7 @@ func GetBoolOrDefault(key string, defVal bool) bool {
 // Example:
 // reset := SetForTesting(t, "SOME_ENV", "new_value")
 // defer reset()
+//
 func SetForTesting(tb testing.TB, key string, value interface{}) func() {
 	original := os.Getenv(key)
 
