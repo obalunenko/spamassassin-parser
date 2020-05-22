@@ -1,11 +1,7 @@
 package processor
 
 import (
-	"bytes"
 	"context"
-	"errors"
-	"io"
-	"io/ioutil"
 	"path/filepath"
 	"testing"
 	"time"
@@ -37,7 +33,7 @@ type expected struct {
 	wantErr bool
 }
 
-func casesTestProcessReports(t testing.TB) ([]test, map[string]expected) {
+func casesTestProcessor(t testing.TB) ([]test, map[string]expected) {
 	t.Helper()
 
 	tests := []test{
@@ -98,7 +94,7 @@ func casesTestProcessReports(t testing.TB) ([]test, map[string]expected) {
 	return tests, expResults
 }
 
-func TestProcessReports(t *testing.T) {
+func TestProcessor(t *testing.T) {
 	var secondsNum time.Duration = 5
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*secondsNum)
@@ -112,7 +108,7 @@ func TestProcessReports(t *testing.T) {
 
 	go processor.Process(ctx)
 
-	tests, expResults := casesTestProcessReports(t)
+	tests, expResults := casesTestProcessor(t)
 
 	go func() {
 		for _, tt := range tests {
@@ -164,21 +160,6 @@ LOOP:
 	}
 }
 
-func TestNewConfig(t *testing.T) {
-	expConfgig := &Config{
-		Buffer: 0,
-		Receive: struct {
-			Response bool
-			Errors   bool
-		}{
-			Response: true,
-			Errors:   false,
-		},
-	}
-	got := NewConfig()
-	require.Equal(t, expConfgig, got)
-}
-
 func TestNewDefaultProcessor(t *testing.T) {
 	got := NewDefault()
 	assert.NotNil(t, got)
@@ -186,126 +167,4 @@ func TestNewDefaultProcessor(t *testing.T) {
 	assert.NotNil(t, got.Results())
 	assert.Nil(t, got.Errors())
 	assert.NotNil(t, got.Input())
-}
-
-func TestNewProcessorInput(t *testing.T) {
-	type args struct {
-		data   io.ReadCloser
-		testID string
-	}
-
-	tests := []struct {
-		name string
-		args args
-		want *Input
-	}{
-		{
-			name: "make processor input",
-			args: args{
-				data:   ioutil.NopCloser(bytes.NewReader([]byte("test reader"))),
-				testID: "test 1",
-			},
-			want: &Input{
-				Data:   ioutil.NopCloser(bytes.NewReader([]byte("test reader"))),
-				TestID: "test 1",
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
-			got := NewInput(tt.args.data, tt.args.testID)
-			assert.Equal(t, tt.want, got)
-		})
-	}
-}
-
-func TestError_Error(t *testing.T) {
-	type fields struct {
-		Err    error
-		TestID string
-	}
-
-	tests := []struct {
-		name   string
-		fields fields
-		want   string
-	}{
-		{
-			name: "error message",
-			fields: fields{
-				Err:    errors.New("test error"),
-				TestID: "testID1",
-			},
-			want: "TestID[testID1]: test error",
-		},
-	}
-
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
-			e := processorError{
-				Err:    tt.fields.Err,
-				TestID: tt.fields.TestID,
-			}
-			got := e.Error()
-			assert.Equal(t, tt.want, got)
-		})
-	}
-}
-
-func TestNewProcessorResponse(t *testing.T) {
-	type args struct {
-		testID string
-		report models.Report
-	}
-
-	tests := []struct {
-		name string
-		args args
-		want *Response
-	}{
-		{
-			name: "make valid response",
-			args: args{
-				testID: "testID1",
-				report: models.Report{
-					SpamAssassin: models.SpamAssassin{
-						Score: 1,
-						Headers: []models.Headers{
-							{
-								Score:       1,
-								Tag:         "TEST_TAG",
-								Description: "descr",
-							},
-						},
-					},
-				},
-			},
-			want: &Response{
-				TestID: "testID1",
-				Report: models.Report{
-					SpamAssassin: models.SpamAssassin{
-						Score: 1,
-						Headers: []models.Headers{
-							{
-								Score:       1,
-								Tag:         "TEST_TAG",
-								Description: "descr",
-							},
-						},
-					},
-				},
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
-			got := NewResponse(tt.args.testID, tt.args.report)
-			assert.Equal(t, tt.want, got)
-		})
-	}
 }

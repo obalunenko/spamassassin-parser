@@ -3,12 +3,10 @@ package processor
 
 import (
 	"context"
-	"io"
 	"sync"
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/oleg-balunenko/spamassassin-parser/internal/processor/models"
 	"github.com/oleg-balunenko/spamassassin-parser/internal/processor/parser"
 )
 
@@ -31,56 +29,11 @@ type Processor interface {
 	Close()
 }
 
-// Input used for importing reports for processing.
-type Input struct {
-	Data   io.ReadCloser
-	TestID string
-}
-
-// NewInput constructs new ProcessorInput with passed parameters.
-func NewInput(data io.ReadCloser, testID string) *Input {
-	return &Input{Data: data, TestID: testID}
-}
-
-// Response contains processed input result.
-type Response struct {
-	TestID string
-	Report models.Report
-}
-
-// NewResponse constructs new ProcessResponse with passed parameters.
-func NewResponse(testID string, report models.Report) *Response {
-	return &Response{TestID: testID, Report: report}
-}
-
 type processor struct {
 	closeOnce   sync.Once
 	inChan      chan *Input
 	resultsChan chan *Response
 	errorsChan  chan error
-}
-
-// Config is a processor instance configuration.
-type Config struct {
-	Buffer  uint
-	Receive struct {
-		Response bool
-		Errors   bool
-	}
-}
-
-// NewConfig creates new config filled with sane default values.
-func NewConfig() *Config {
-	return &Config{
-		Buffer: 0,
-		Receive: struct {
-			Response bool
-			Errors   bool
-		}{
-			Response: true,
-			Errors:   false,
-		},
-	}
 }
 
 // NewDefault creates new instance of processor with sane default config.
@@ -107,16 +60,6 @@ func New(cfg *Config) Processor {
 	}
 
 	return &pr
-}
-
-// makeBufferedResponseChan creates buffered response channel.
-func makeBufferedResponseChan(buf uint) chan *Response {
-	return make(chan *Response, buf)
-}
-
-// makeBufferedInputChan creates buffered input channel.
-func makeBufferedInputChan(buf uint) chan *Input {
-	return make(chan *Input, buf)
 }
 
 func (p *processor) Process(ctx context.Context) {

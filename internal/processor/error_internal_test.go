@@ -47,3 +47,37 @@ func Test_newError(t *testing.T) {
 		})
 	}
 }
+
+func Test_processorError_Error(t *testing.T) {
+	type fields struct {
+		Err    error
+		TestID string
+	}
+
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			name: "error message",
+			fields: fields{
+				Err:    errors.New("test error"),
+				TestID: "testID1",
+			},
+			want: "TestID[testID1]: test error",
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			e := processorError{
+				Err:    tt.fields.Err,
+				TestID: tt.fields.TestID,
+			}
+			got := e.Error()
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
