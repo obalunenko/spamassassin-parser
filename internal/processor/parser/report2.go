@@ -3,13 +3,12 @@ package parser
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"regexp"
 	"strings"
 
-	"github.com/pkg/errors"
-
-	"github.com/oleg-balunenko/spamassassin-parser/internal/models"
+	"github.com/oleg-balunenko/spamassassin-parser/internal/processor/models"
 )
 
 var (
@@ -52,8 +51,8 @@ func (rp report2Parser) Parse(data io.Reader) (models.Report, error) {
 		if len(matches) != 0 {
 			h, err := makeHeader(matches[colScore], matches[colTag], matches[colDescr])
 			if err != nil {
-				return emptyReport, errors.Wrapf(err,
-					"failed to make header [line num: %d], [line: %s]", lnum, line)
+				return emptyReport, fmt.Errorf(
+					"failed to make header [line num: %d], [line: %s]: %w", lnum, line, err)
 			}
 
 			score += h.Score

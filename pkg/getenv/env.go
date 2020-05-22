@@ -1,5 +1,5 @@
-// Package env provide functionality for loading values from environment variables.
-package env
+// Package getenv provide functionality for loading values from environment variables.
+package getenv
 
 import (
 	"fmt"
@@ -8,8 +8,8 @@ import (
 	"testing"
 )
 
-// GetStringOrDefault returns string environment variable value or passed default.
-func GetStringOrDefault(key string, defVal string) string {
+// StringOrDefault returns string environment variable value or passed default.
+func StringOrDefault(key string, defVal string) string {
 	val, ok := os.LookupEnv(key)
 	if !ok || val == "" {
 		return defVal
@@ -18,8 +18,8 @@ func GetStringOrDefault(key string, defVal string) string {
 	return val
 }
 
-// GetBoolOrDefault returns boolean environment variable value or passed default.
-func GetBoolOrDefault(key string, defVal bool) bool {
+// BoolOrDefault returns boolean environment variable value or passed default.
+func BoolOrDefault(key string, defVal bool) bool {
 	val, ok := os.LookupEnv(key)
 	if !ok || val == "" {
 		return defVal
@@ -38,6 +38,7 @@ func GetBoolOrDefault(key string, defVal bool) bool {
 // Example:
 // reset := SetForTesting(t, "SOME_ENV", "new_value")
 // defer reset()
+//
 func SetForTesting(tb testing.TB, key string, value interface{}) func() {
 	original := os.Getenv(key)
 

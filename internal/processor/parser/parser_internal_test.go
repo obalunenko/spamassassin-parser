@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/oleg-balunenko/spamassassin-parser/internal/processor/models"
 	"github.com/oleg-balunenko/spamassassin-parser/pkg/utils"
 )
 
@@ -17,60 +18,6 @@ const (
 	testReport1 = "report1.txt"
 	testReport2 = "report2.txt"
 )
-
-func TestProcessReport(t *testing.T) {
-	type args struct {
-		filepath string
-	}
-
-	type expected struct {
-		filepath string
-		wantErr  bool
-	}
-
-	tests := []struct {
-		name     string
-		args     args
-		expected expected
-	}{
-		{
-			name: "process report type 1",
-			args: args{
-				filepath: filepath.Join("..", testdata, testReport1),
-			},
-			expected: expected{
-				filepath: filepath.Join("..", testdata, goldenFile1),
-				wantErr:  false,
-			},
-		},
-		{
-			name: "process report type 2",
-			args: args{
-				filepath: filepath.Join("..", testdata, testReport2),
-			},
-			expected: expected{
-				filepath: filepath.Join("..", testdata, goldenFile2),
-				wantErr:  false,
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
-			data := utils.GetReaderFromFile(t, tt.args.filepath)
-			got, err := ParseReport(data)
-			if tt.expected.wantErr {
-				assert.Error(t, err)
-				return
-			}
-
-			wantReport := utils.GetReportFromFile(t, tt.expected.filepath)
-			assert.NoError(t, err)
-			assert.Equal(t, wantReport, got)
-		})
-	}
-}
 
 func Test_processReport(t *testing.T) {
 	type args struct {
@@ -125,7 +72,7 @@ func Test_processReport(t *testing.T) {
 				assert.Error(t, err)
 				return
 			}
-			wantReport := utils.GetReportFromFile(t, tt.expected.filepath)
+			wantReport := models.GetReportFromFile(t, tt.expected.filepath)
 			assert.NoError(t, err)
 			assert.Equal(t, wantReport, got)
 		})

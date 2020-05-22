@@ -3,18 +3,17 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/signal"
 	"path/filepath"
 	"sync"
 	"syscall"
 
-	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/oleg-balunenko/spamassassin-parser/internal/appconfig"
 	"github.com/oleg-balunenko/spamassassin-parser/internal/fileutil"
-	"github.com/oleg-balunenko/spamassassin-parser/internal/models"
 	"github.com/oleg-balunenko/spamassassin-parser/internal/processor"
 	"github.com/oleg-balunenko/spamassassin-parser/pkg/utils"
 )
@@ -32,7 +31,7 @@ func main() {
 	pcCfg := processor.NewConfig()
 	pcCfg.Receive.Errors = appCfg.ReceiveErrors
 
-	pr := processor.NewProcessor(pcCfg)
+	pr := processor.New(pcCfg)
 
 	go pr.Process(ctx)
 
@@ -49,11 +48,11 @@ func main() {
 			case reportFile := <-fileChan:
 				file, err := os.Open(filepath.Clean(filepath.Join(appCfg.InputDir, reportFile)))
 				if err != nil {
-					log.Fatal(errors.Wrap(err, "failed to open file with report"))
+					log.Fatal(fmt.Errorf("failed to open file with report: %w", err))
 				}
 
 				go func() {
-					pr.Input() <- models.NewProcessorInput(file, filepath.Base(file.Name()))
+					pr.Input() <- processor.NewInput(file, filepath.Base(file.Name()))
 				}()
 			}
 		}
@@ -87,20 +86,20 @@ func process(ctx context.Context, wg *sync.WaitGroup, pr processor.Processor, di
 			if res != nil {
 				s, err := utils.PrettyPrint(res.Report, "", "\t")
 				if err != nil {
-					log.Error(errors.Wrap(err, "failed to print report"))
+					log.Error(fmt.Errorf("failed to print report: %w", err))
 				}
 
 				log.Printf("[TestID: %s] archive: \n %s \n",
 					res.TestID, s)
 
 				if err = fileutil.WriteFile(res.TestID, dirsCfg.ResultDir, s); err != nil {
-					log.Error(errors.Wrap(err, "failed to write file"))
+					log.Error(fmt.Errorf("failed to write file: %w", err))
 				}
 
 				log.Infof("Moving file %s to archive folder: %s", res.TestID, dirsCfg.ArchiveDir)
 
 				if err = fileutil.MoveFile(res.TestID, dirsCfg.InputDir, dirsCfg.ArchiveDir); err != nil {
-					log.Error(errors.Wrap(err, "failed to move archive file"))
+					log.Error(fmt.Errorf("failed to move archive file: %w", err))
 				}
 
 				log.Info("File moved")

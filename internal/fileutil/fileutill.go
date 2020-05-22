@@ -11,7 +11,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -24,32 +23,32 @@ func WriteFile(fname, dir string, data string) error {
 	outName := filepath.Join(dir, fmt.Sprintf("%s.json", fname))
 
 	if err := createDirIfNotExist(dir, os.ModePerm); err != nil {
-		return errors.Wrap(err, "failed to create directory")
+		return fmt.Errorf("failed to create directory: %w", err)
 	}
 
 	resFile, err := os.Create(outName)
 	if err != nil {
-		return errors.Wrapf(err, "failed to create result file [%s]", outName)
+		return fmt.Errorf("failed to create result file [%s]: %w", outName, err)
 	}
 
 	if _, err = resFile.WriteString(data); err != nil {
-		return errors.Wrap(err, "failed to write result to file")
+		return fmt.Errorf("failed to write result to file: %w", err)
 	}
 
 	if err = resFile.Close(); err != nil {
-		return errors.Wrap(err, "failed to close result file")
+		return fmt.Errorf("failed to close result file: %w", err)
 	}
 
 	return nil
 }
 
-// MoveFile moves file from base dir to target
+// MoveFile moves file from base dir to target.
 func MoveFile(name string, sourceDir, destDir string) error {
 	sourcePath := filepath.Join(sourceDir, name)
 
 	inputFile, err := os.Open(filepath.Clean(sourcePath))
 	if err != nil {
-		return errors.Wrap(err, "couldn't open source file")
+		return fmt.Errorf("couldn't open source file: %w", err)
 	}
 
 	defer func() {
@@ -59,14 +58,14 @@ func MoveFile(name string, sourceDir, destDir string) error {
 	}()
 
 	if err = createDirIfNotExist(destDir, os.ModePerm); err != nil {
-		return errors.Wrap(err, "failed to create destPath")
+		return fmt.Errorf("failed to create destPath: %w", err)
 	}
 
 	destPath := filepath.Join(destDir, name)
 
 	outputFile, err := os.Create(destPath)
 	if err != nil {
-		return fmt.Errorf("couldn't open dest file: %s", err)
+		return fmt.Errorf("couldn't open dest file: %w", err)
 	}
 
 	defer func() {
@@ -76,12 +75,12 @@ func MoveFile(name string, sourceDir, destDir string) error {
 	}()
 
 	if _, err = io.Copy(outputFile, inputFile); err != nil {
-		return fmt.Errorf("writing to output file failed: %s", err)
+		return fmt.Errorf("writing to output file failed: %w", err)
 	}
 
 	// The copy was successful, so now delete the original file
 	if err = os.Remove(sourcePath); err != nil {
-		return fmt.Errorf("failed removing original file: %s", err)
+		return fmt.Errorf("failed removing original file: %w", err)
 	}
 
 	return nil
@@ -90,7 +89,7 @@ func MoveFile(name string, sourceDir, destDir string) error {
 func createDirIfNotExist(dir string, mode os.FileMode) error {
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		if err = os.MkdirAll(dir, mode); err != nil {
-			return errors.Wrapf(err, "failed to create directory for [%s]", dir)
+			return fmt.Errorf("failed to create directory for [%s]: %w", dir, err)
 		}
 	}
 

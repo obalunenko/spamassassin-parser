@@ -2,18 +2,16 @@
 package parser
 
 import (
+	"fmt"
 	"strconv"
 
-	"github.com/pkg/errors"
-
-	"github.com/oleg-balunenko/spamassassin-parser/internal/models"
+	"github.com/oleg-balunenko/spamassassin-parser/internal/processor/models"
 )
 
 func makeHeader(score, tag, description string) (models.Headers, error) {
 	sc, err := strconv.ParseFloat(score, 64)
 	if err != nil {
-		return models.Headers{}, errors.Wrapf(err,
-			"failed to parse score")
+		return models.Headers{}, fmt.Errorf("failed to parse score: %w", err)
 	}
 
 	return models.Headers{

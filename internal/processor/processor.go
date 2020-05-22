@@ -7,8 +7,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/oleg-balunenko/spamassassin-parser/internal/models"
-	"github.com/oleg-balunenko/spamassassin-parser/internal/parser"
+	"github.com/oleg-balunenko/spamassassin-parser/internal/processor/parser"
 )
 
 // Processor manages spamassassin reports processing.
@@ -19,55 +18,32 @@ type Processor interface {
 	// Results returns the read channel for the messages that are returned by
 	// the processor.
 	// Values from channel should be read or deadlock will be occurred if in config results channel is enabled.
-	Results() <-chan *models.ProcessorResponse
+	Results() <-chan *Response
 	// Errors returns the read channel for the errors that are returned by processor.
 	// Values from channel should be read or deadlock will be occurred if in config errors channel is enabled.
 	Errors() <-chan error
 	// ProcessorInput is the output channel for the user to write messages to that they
 	// wish to process.
-	Input() chan<- *models.ProcessorInput
+	Input() chan<- *Input
 	// Close closes underlying input channel - means that no work expected.
 	Close()
 }
 
 type processor struct {
 	closeOnce   sync.Once
-	inChan      chan *models.ProcessorInput
-	resultsChan chan *models.ProcessorResponse
+	inChan      chan *Input
+	resultsChan chan *Response
 	errorsChan  chan error
 }
 
-// Config is a processor instance configuration.
-type Config struct {
-	Buffer  uint
-	Receive struct {
-		Response bool
-		Errors   bool
-	}
-}
-
-// NewConfig creates new config filled with sane default values.
-func NewConfig() *Config {
-	return &Config{
-		Buffer: 0,
-		Receive: struct {
-			Response bool
-			Errors   bool
-		}{
-			Response: true,
-			Errors:   false,
-		},
-	}
-}
-
-// NewDefaultProcessor creates new instance of processor with sane default config.
+// NewDefault creates new instance of processor with sane default config.
 // Not buffered. Response is enabled. Errors are disabled.
-func NewDefaultProcessor() Processor {
-	return NewProcessor(NewConfig())
+func NewDefault() Processor {
+	return New(NewConfig())
 }
 
-// NewProcessor creates processor instance.
-func NewProcessor(cfg *Config) Processor {
+// New creates processor instance.
+func New(cfg *Config) Processor {
 	if cfg == nil {
 		cfg = NewConfig()
 	}
@@ -86,16 +62,6 @@ func NewProcessor(cfg *Config) Processor {
 	return &pr
 }
 
-// makeBufferedResponseChan creates buffered response channel.
-func makeBufferedResponseChan(buf uint) chan *models.ProcessorResponse {
-	return make(chan *models.ProcessorResponse, buf)
-}
-
-// makeBufferedInputChan creates buffered input channel.
-func makeBufferedInputChan(buf uint) chan *models.ProcessorInput {
-	return make(chan *models.ProcessorInput, buf)
-}
-
 func (p *processor) Process(ctx context.Context) {
 	defer func() {
 		p.closeResults()
@@ -111,7 +77,7 @@ func (p *processor) Process(ctx context.Context) {
 	}
 }
 
-func (p *processor) processData(in *models.ProcessorInput) {
+func (p *processor) processData(in *Input) {
 	if in == nil {
 		return
 	}
@@ -124,7 +90,7 @@ func (p *processor) processData(in *models.ProcessorInput) {
 
 	report, err := parser.ParseReport(in.Data)
 	if err != nil {
-		err = models.NewError(err, in.TestID)
+		err = newError(err, in.TestID)
 
 		if p.errorsChan != nil {
 			p.errorsChan <- err
@@ -135,7 +101,7 @@ func (p *processor) processData(in *models.ProcessorInput) {
 		return
 	}
 
-	resp := models.NewProcessorResponse(in.TestID, report)
+	resp := NewResponse(in.TestID, report)
 
 	if p.resultsChan != nil {
 		p.resultsChan <- resp
@@ -144,11 +110,11 @@ func (p *processor) processData(in *models.ProcessorInput) {
 	}
 }
 
-func (p *processor) Results() <-chan *models.ProcessorResponse {
+func (p *processor) Results() <-chan *Response {
 	return p.resultsChan
 }
 
-func (p *processor) Input() chan<- *models.ProcessorInput {
+func (p *processor) Input() chan<- *Input {
 	return p.inChan
 }
 

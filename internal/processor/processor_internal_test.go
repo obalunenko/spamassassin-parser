@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/oleg-balunenko/spamassassin-parser/internal/models"
+	"github.com/oleg-balunenko/spamassassin-parser/internal/processor/models"
 	"github.com/oleg-balunenko/spamassassin-parser/pkg/utils"
 )
 
@@ -33,47 +33,47 @@ type expected struct {
 	wantErr bool
 }
 
-func casesTestProcessReports(t testing.TB) ([]test, map[string]expected) {
+func casesTestProcessor(t testing.TB) ([]test, map[string]expected) {
 	t.Helper()
 
 	tests := []test{
 		{
 			input: input{
-				filepath: filepath.Join("..", "testdata", "report1.txt"),
+				filepath: filepath.Join("testdata", "report1.txt"),
 				testID:   "report1.txt",
 			},
 			want: want{
-				filepath: filepath.Join("..", "testdata", "report1.golden.json"),
+				filepath: filepath.Join("testdata", "report1.golden.json"),
 				wantErr:  false,
 			},
 		},
 		{
 			input: input{
-				filepath: filepath.Join("..", "testdata", "report2.txt"),
+				filepath: filepath.Join("testdata", "report2.txt"),
 				testID:   "report2.txt",
 			},
 			want: want{
-				filepath: filepath.Join("..", "testdata", "report2.golden.json"),
+				filepath: filepath.Join("testdata", "report2.golden.json"),
 				wantErr:  false,
 			},
 		},
 		{
 			input: input{
-				filepath: filepath.Join("..", "testdata", "report1.txt"),
+				filepath: filepath.Join("testdata", "report1.txt"),
 				testID:   "report1.txt.repeat",
 			},
 			want: want{
-				filepath: filepath.Join("..", "testdata", "report1.golden.json"),
+				filepath: filepath.Join("testdata", "report1.golden.json"),
 				wantErr:  false,
 			},
 		},
 		{
 			input: input{
-				filepath: filepath.Join("..", "testdata", "empty.json"),
+				filepath: filepath.Join("testdata", "empty.json"),
 				testID:   "empty",
 			},
 			want: want{
-				filepath: filepath.Join("..", "testdata", "empty.json"),
+				filepath: filepath.Join("testdata", "empty.json"),
 				wantErr:  true,
 			},
 		},
@@ -83,7 +83,7 @@ func casesTestProcessReports(t testing.TB) ([]test, map[string]expected) {
 
 	for _, tt := range tests {
 		tt := tt
-		report := utils.GetReportFromFile(t, tt.want.filepath)
+		report := models.GetReportFromFile(t, tt.want.filepath)
 
 		expResults[tt.input.testID] = expected{
 			report:  report,
@@ -94,7 +94,7 @@ func casesTestProcessReports(t testing.TB) ([]test, map[string]expected) {
 	return tests, expResults
 }
 
-func TestProcessReports(t *testing.T) {
+func TestProcessor(t *testing.T) {
 	var secondsNum time.Duration = 5
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*secondsNum)
@@ -104,18 +104,18 @@ func TestProcessReports(t *testing.T) {
 	cfg := NewConfig()
 	cfg.Receive.Errors = true
 
-	processor := NewProcessor(cfg)
+	processor := New(cfg)
 
 	go processor.Process(ctx)
 
-	tests, expResults := casesTestProcessReports(t)
+	tests, expResults := casesTestProcessor(t)
 
 	go func() {
 		for _, tt := range tests {
 			tt := tt
 			file := utils.GetReaderFromFile(t, tt.input.filepath)
 			t.Logf("processing report: %s \n", tt.input.testID)
-			processor.Input() <- &models.ProcessorInput{
+			processor.Input() <- &Input{
 				Data:   file,
 				TestID: tt.input.testID,
 			}
@@ -138,8 +138,8 @@ LOOP:
 				assert.Equal(t, exp.report, res.Report)
 			}
 		case err := <-processor.Errors():
-			require.IsType(t, &models.Error{}, err, "unexpected error type")
-			merr, ok := err.(*models.Error)
+			require.IsType(t, &processorError{}, err, "unexpected error type")
+			merr, ok := err.(*processorError)
 			require.True(t, ok)
 
 			exp := expResults[merr.TestID]
@@ -160,23 +160,8 @@ LOOP:
 	}
 }
 
-func TestNewConfig(t *testing.T) {
-	expConfgig := &Config{
-		Buffer: 0,
-		Receive: struct {
-			Response bool
-			Errors   bool
-		}{
-			Response: true,
-			Errors:   false,
-		},
-	}
-	got := NewConfig()
-	require.Equal(t, expConfgig, got)
-}
-
 func TestNewDefaultProcessor(t *testing.T) {
-	got := NewDefaultProcessor()
+	got := NewDefault()
 	assert.NotNil(t, got)
 	assert.IsType(t, &processor{}, got)
 	assert.NotNil(t, got.Results())

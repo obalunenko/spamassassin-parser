@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/getenv sh
 set -e
 
 export GO111MODULE=on
