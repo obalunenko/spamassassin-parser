@@ -14,8 +14,6 @@ WORKDIR ${PROJECT_DIR}
 RUN make gomod
 # vet project
 RUN make vet
-# test project
-RUN make test-docker
 # compile executable
 RUN make compile
 

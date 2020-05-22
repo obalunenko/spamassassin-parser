@@ -47,11 +47,6 @@ test:
 	./scripts/run-tests.sh
 .PHONY: test
 
-## Test all packages
-test-docker:
-	./scripts/run-tests-docker.sh
-.PHONY: test-docker
-
 ## Test coverage
 test-cover:
 	./scripts/coverage.sh
