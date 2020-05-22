@@ -76,10 +76,6 @@ dependencies:
 	./scripts/get-dependencies.sh
 .PHONY: dependencies
 
-## review code
-review:
-	reviewdog -reporter=github-pr-check
-
 ## Sync dependencies
 gomod:
 	./scripts/gomod.sh
