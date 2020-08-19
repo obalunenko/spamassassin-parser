@@ -20,7 +20,6 @@ builds:
       - linux
     goarch:
       - amd64
-      - 386
       - arm
     main: ./cmd/spamassassin-parser
     ldflags: -s -w -X main.version={{.Version}} -X main.commit={{.ShortCommit}} -X main.date={{.Date}}
