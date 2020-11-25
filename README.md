@@ -1,18 +1,18 @@
 # spamassassin-parser
 
 [![GO](https://img.shields.io/github/go-mod/go-version/oleg-balunenko/spamassassin-parser)](https://golang.org/doc/devel/release.html)
-[![Build Status](https://travis-ci.com/oleg-balunenko/spamassassin-parser.svg?branch=master)](https://travis-ci.com/oleg-balunenko/spamassassin-parser)
-[![Coverage Status](https://coveralls.io/repos/github/oleg-balunenko/spamassassin-parser/badge.svg?branch=master)](https://coveralls.io/github/oleg-balunenko/spamassassin-parser?branch=master)
-[![Go Report Card](https://goreportcard.com/badge/github.com/oleg-balunenko/spamassassin-parser)](https://goreportcard.com/report/github.com/oleg-balunenko/spamassassin-parser)
+[![Build Status](https://travis-ci.com/obalunenko/spamassassin-parser.svg?branch=master)](https://travis-ci.com/obalunenko/spamassassin-parser)
+[![Coverage Status](https://coveralls.io/repos/github/obalunenko/spamassassin-parser/badge.svg?branch=master)](https://coveralls.io/github/obalunenko/spamassassin-parser?branch=master)
+[![Go Report Card](https://goreportcard.com/badge/github.com/obalunenko/spamassassin-parser)](https://goreportcard.com/report/github.com/obalunenko/spamassassin-parser)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=oleg-balunenko_spamassassin-parser&metric=alert_status)](https://sonarcloud.io/dashboard?id=oleg-balunenko_spamassassin-parser)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/8847ad100b3f415fa419430a58de1a2d)](https://www.codacy.com/manual/oleg.balunenko/spamassassin-parser?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=oleg-balunenko/spamassassin-parser&amp;utm_campaign=Badge_Grade)
-[![GoDoc](https://godoc.org/github.com/oleg-balunenko/spamassassin-parser?status.svg)](https://godoc.org/github.com/oleg-balunenko/spamassassin-parser)
-[![Latest release artifacts](https://img.shields.io/github/v/release/oleg-balunenko/spamassassin-parser)](https://github.com/oleg-balunenko/spamassassin-parser/releases/latest)
+[![GoDoc](https://godoc.org/github.com/obalunenko/spamassassin-parser?status.svg)](https://godoc.org/github.com/obalunenko/spamassassin-parser)
+[![Latest release artifacts](https://img.shields.io/github/v/release/obalunenko/spamassassin-parser)](https://github.com/obalunenko/spamassassin-parser/releases/latest)
 [![Docker pulls](https://img.shields.io/docker/pulls/olegbalunenko/spamassassin-parser)](https://hub.docker.com/r/olegbalunenko/spamassassin-parser)
-[![License](https://img.shields.io/github/license/oleg-balunenko/spamassassin-parser)](/LICENSE)
+[![License](https://img.shields.io/github/license/obalunenko/spamassassin-parser)](/LICENSE)
 
 <p align="center">
-  <img src="https://github.com/oleg-balunenko/spamassassin-parser/blob/master/.assets/assassingopher.png" alt="" width="300">
+  <img src="https://github.com/obalunenko/spamassassin-parser/blob/master/.assets/assassingopher.png" alt="" width="300">
   <br>
 </p>
 
@@ -20,7 +20,7 @@ spamassassin-parser - a command line tool that parses spam filter reports into h
 
 ## Usage
 
-1. Download executable file: [![Latest release artifacts](https://img.shields.io/github/v/release/oleg-balunenko/spamassassin-parser)](https://github.com/oleg-balunenko/spamassassin-parser/releases/latest)
+1. Download executable file: [![Latest release artifacts](https://img.shields.io/github/v/release/obalunenko/spamassassin-parser)](https://github.com/oleg-balunenko/spamassassin-parser/releases/latest)
 2. Unrar archive.
 3. a. Run executable `spamassassin-parser`
    b. Run docker-compose `docker-compose -f ./docker-compose.yml up --build -d`
