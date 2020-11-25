@@ -38,7 +38,7 @@ jobs:
         - 1.15.x
       os:
         - linux
-      go_import_path: github.com/oleg-balunenko/spamassassin-parser
+      go_import_path: github.com/obalunenko/spamassassin-parser
       script:
         - echo "Build stage"
         - make compile

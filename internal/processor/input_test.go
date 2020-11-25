@@ -8,7 +8,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/oleg-balunenko/spamassassin-parser/internal/processor"
+	"github.com/obalunenko/spamassassin-parser/internal/processor"
 )
 
 func TestNewInput(t *testing.T) {

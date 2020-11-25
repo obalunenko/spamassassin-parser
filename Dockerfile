@@ -1,6 +1,6 @@
 FROM golang:1.14-alpine as build-container
 
-ENV PROJECT_DIR=${GOPATH}/src/github.com/oleg-balunenko/spamassassin-parser
+ENV PROJECT_DIR=${GOPATH}/src/github.com/obalunenko/spamassassin-parser
 
 RUN apk update && \
     apk upgrade && \

@@ -7,12 +7,10 @@ import (
 	"io"
 	"regexp"
 
-	"github.com/oleg-balunenko/spamassassin-parser/internal/processor/models"
+	"github.com/obalunenko/spamassassin-parser/internal/processor/models"
 )
 
-var (
-	reType1 = regexp.MustCompile(`([*])[\s]+([-]?\d+.\d+)?[\s](([[:word:]]+)?[\s](.*))`)
-)
+var reType1 = regexp.MustCompile(`([*])[\s]+([-]?\d+.\d+)?[\s](([[:word:]]+)?[\s](.*))`)
 
 type report1Parser struct{}
 
@@ -55,7 +53,7 @@ func (rp report1Parser) Parse(data io.Reader) (models.Report, error) {
 			score += h.Score
 			r.SpamAssassin.Headers = append(r.SpamAssassin.Headers, h)
 		} else {
-			var indexShift = 1
+			indexShift := 1
 
 			last := len(r.SpamAssassin.Headers) - indexShift
 			if last >= 0 {

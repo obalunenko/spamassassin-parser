@@ -7,8 +7,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/oleg-balunenko/spamassassin-parser/internal/processor/models"
-	"github.com/oleg-balunenko/spamassassin-parser/pkg/utils"
+	"github.com/obalunenko/spamassassin-parser/internal/processor/models"
+	"github.com/obalunenko/spamassassin-parser/pkg/utils"
 )
 
 const (
@@ -70,6 +70,7 @@ func Test_processReport(t *testing.T) {
 			got, err := parser.Parse(data)
 			if tt.expected.wantErr {
 				assert.Error(t, err)
+
 				return
 			}
 			wantReport := models.GetReportFromFile(t, tt.expected.filepath)
@@ -80,6 +81,8 @@ func Test_processReport(t *testing.T) {
 }
 
 func Test_getReportType(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		filepath string
 	}
@@ -125,6 +128,8 @@ func Test_getReportType(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			data := utils.GetReaderFromFile(t, tt.args.filepath)
 			got := getReportType(data)
 			assert.Equal(t, tt.expected.rt.String(), got.String())
@@ -133,6 +138,8 @@ func Test_getReportType(t *testing.T) {
 }
 
 func Test_newParser(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		rt reportType
 	}
@@ -171,9 +178,12 @@ func Test_newParser(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			got, err := newParser(tt.args.rt)
 			if tt.wantErr {
 				assert.Error(t, err)
+
 				return
 			}
 			assert.NoError(t, err)

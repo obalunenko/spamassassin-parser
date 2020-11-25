@@ -1,6 +1,6 @@
 package processor
 
-import "github.com/oleg-balunenko/spamassassin-parser/internal/processor/models"
+import "github.com/obalunenko/spamassassin-parser/internal/processor/models"
 
 // Response contains processed input result.
 type Response struct {

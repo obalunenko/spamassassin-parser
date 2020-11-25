@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/oleg-balunenko/spamassassin-parser/internal/processor/models"
+	"github.com/obalunenko/spamassassin-parser/internal/processor/models"
 )
 
 func makeHeader(score, tag, description string) (models.Headers, error) {

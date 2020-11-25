@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/oleg-balunenko/spamassassin-parser/internal/processor"
+	"github.com/obalunenko/spamassassin-parser/internal/processor"
 )
 
 func TestNewConfig(t *testing.T) {

@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/oleg-balunenko/spamassassin-parser/internal/processor/models"
+	"github.com/obalunenko/spamassassin-parser/internal/processor/models"
 )
 
 func Test_makeHeader(t *testing.T) {
@@ -53,6 +53,7 @@ func Test_makeHeader(t *testing.T) {
 			got, err := makeHeader(tt.args.score, tt.args.tag, tt.args.description)
 			if tt.wantErr {
 				assert.Error(t, err)
+
 				return
 			}
 			assert.NoError(t, err)

@@ -5,8 +5,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/oleg-balunenko/spamassassin-parser/internal/appconfig"
-	"github.com/oleg-balunenko/spamassassin-parser/pkg/getenv"
+	"github.com/obalunenko/spamassassin-parser/internal/appconfig"
+	"github.com/obalunenko/spamassassin-parser/pkg/getenv"
 )
 
 func TestLoad(t *testing.T) {

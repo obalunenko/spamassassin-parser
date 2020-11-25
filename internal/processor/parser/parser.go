@@ -4,18 +4,17 @@ package parser
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"math"
 	"strings"
 
-	"github.com/oleg-balunenko/spamassassin-parser/internal/processor/models"
+	"github.com/obalunenko/spamassassin-parser/internal/processor/models"
 )
 
-var (
-	emptyReport models.Report
-)
+var emptyReport models.Report
 
 // Parser is an interface that describes the basic functionality of a reports parser.
 type Parser interface {
@@ -25,13 +24,15 @@ type Parser interface {
 
 func newParser(rt reportType) (Parser, error) {
 	switch rt {
+	case reportTypeSentinel, reportTypeUnknown:
+		return nil, errors.New("invalid report type")
 	case reportType1:
 		return report1Parser{}, nil
 	case reportType2:
 		return report2Parser{}, nil
+	default:
+		return nil, fmt.Errorf("not implemented parser for report: %s", rt.String())
 	}
-
-	return nil, fmt.Errorf("not implemented parser for report: %s", rt.String())
 }
 
 //go:generate stringer -type=reportType

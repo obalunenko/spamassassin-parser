@@ -37,8 +37,7 @@ func BoolOrDefault(key string, defVal bool) bool {
 // Defer should be called right after call of this function.
 // Example:
 // reset := SetForTesting(t, "SOME_ENV", "new_value")
-// defer reset()
-//
+// defer reset().
 func SetForTesting(tb testing.TB, key string, value interface{}) func() {
 	original := os.Getenv(key)
 

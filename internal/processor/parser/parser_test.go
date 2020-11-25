@@ -6,9 +6,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/oleg-balunenko/spamassassin-parser/internal/processor/models"
-	"github.com/oleg-balunenko/spamassassin-parser/internal/processor/parser"
-	"github.com/oleg-balunenko/spamassassin-parser/pkg/utils"
+	"github.com/obalunenko/spamassassin-parser/internal/processor/models"
+	"github.com/obalunenko/spamassassin-parser/internal/processor/parser"
+	"github.com/obalunenko/spamassassin-parser/pkg/utils"
 )
 
 const (
@@ -63,6 +63,7 @@ func TestProcessReport(t *testing.T) {
 			got, err := parser.ParseReport(data)
 			if tt.expected.wantErr {
 				assert.Error(t, err)
+
 				return
 			}
 

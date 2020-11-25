@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/oleg-balunenko/spamassassin-parser/pkg/getenv"
+	"github.com/obalunenko/spamassassin-parser/pkg/getenv"
 )
 
 func TestGetBoolOrDefault(t *testing.T) {
