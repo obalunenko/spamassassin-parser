@@ -5,18 +5,22 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/oleg-balunenko/spamassassin-parser/pkg/utils"
+	"github.com/obalunenko/spamassassin-parser/pkg/utils"
 )
 
 func TestPrettyPrint(t *testing.T) {
+	t.Parallel()
 	tests := casesTestPrettyPrint(t)
 
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			got, err := utils.PrettyPrint(tt.args.v, tt.args.prefix, tt.args.indent)
 			if tt.wantErr {
 				assert.Error(t, err)
+
 				return
 			}
 			assert.NoError(t, err)

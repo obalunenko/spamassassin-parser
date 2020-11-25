@@ -2,6 +2,7 @@ linters:
   enable-all: true
   disable:
     - gochecknoglobals
+    - paralleltest
 
 linters-settings:
   errcheck:
@@ -50,7 +51,7 @@ linters-settings:
     # make an issue if func has more lines of code than this setting and it has naked returns; default is 30
     max-func-lines: 30
   goimports:
-    local-prefixes: github.com/oleg-balunenko/spamassassin-parser/
+    local-prefixes: github.com/obalunenko/spamassassin-parser/
   unparam:
     algo: cha
     check-exported: false
@@ -132,7 +133,6 @@ linters-settings:
         skipTestFuncs: true
       underef:
         skipRecvDeref: true
-
 
 run:
   issues-exit-code: 1

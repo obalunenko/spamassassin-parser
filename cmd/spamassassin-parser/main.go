@@ -12,10 +12,10 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/oleg-balunenko/spamassassin-parser/internal/appconfig"
-	"github.com/oleg-balunenko/spamassassin-parser/internal/fileutil"
-	"github.com/oleg-balunenko/spamassassin-parser/internal/processor"
-	"github.com/oleg-balunenko/spamassassin-parser/pkg/utils"
+	"github.com/obalunenko/spamassassin-parser/internal/appconfig"
+	"github.com/obalunenko/spamassassin-parser/internal/fileutil"
+	"github.com/obalunenko/spamassassin-parser/internal/processor"
+	"github.com/obalunenko/spamassassin-parser/pkg/utils"
 )
 
 func main() {

@@ -5,8 +5,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/oleg-balunenko/spamassassin-parser/internal/processor"
-	"github.com/oleg-balunenko/spamassassin-parser/internal/processor/models"
+	"github.com/obalunenko/spamassassin-parser/internal/processor"
+	"github.com/obalunenko/spamassassin-parser/internal/processor/models"
 )
 
 func TestNewResponse(t *testing.T) {
@@ -56,6 +56,8 @@ func TestNewResponse(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		t.Parallel()
+
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			got := processor.NewResponse(tt.args.testID, tt.args.report)

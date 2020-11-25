@@ -2,6 +2,7 @@ package processor
 
 import (
 	"context"
+	"errors"
 	"path/filepath"
 	"testing"
 	"time"
@@ -9,8 +10,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/oleg-balunenko/spamassassin-parser/internal/processor/models"
-	"github.com/oleg-balunenko/spamassassin-parser/pkg/utils"
+	"github.com/obalunenko/spamassassin-parser/internal/processor/models"
+	"github.com/obalunenko/spamassassin-parser/pkg/utils"
 )
 
 type want struct {
@@ -139,7 +140,11 @@ LOOP:
 			}
 		case err := <-processor.Errors():
 			require.IsType(t, &processorError{}, err, "unexpected error type")
-			merr, ok := err.(*processorError)
+
+			var merr *processorError
+
+			ok := errors.As(err, &merr)
+
 			require.True(t, ok)
 
 			exp := expResults[merr.TestID]
@@ -147,6 +152,7 @@ LOOP:
 			if exp.wantErr {
 				assert.Error(t, err)
 				processed++
+
 				continue
 			}
 			assert.NoError(t, err)
@@ -155,12 +161,15 @@ LOOP:
 			assert.Equal(t, len(expResults), processed, "deadline reached, but not all results received")
 			var secondsNum time.Duration = 2
 			time.Sleep(time.Second * secondsNum)
+
 			break LOOP
 		}
 	}
 }
 
 func TestNewDefaultProcessor(t *testing.T) {
+	t.Parallel()
+
 	got := NewDefault()
 	assert.NotNil(t, got)
 	assert.IsType(t, &processor{}, got)

@@ -20,7 +20,7 @@ spamassassin-parser - a command line tool that parses spam filter reports into h
 
 ## Usage
 
-1. Download executable file: [![Latest release artifacts](https://img.shields.io/github/v/release/obalunenko/spamassassin-parser)](https://github.com/oleg-balunenko/spamassassin-parser/releases/latest)
+1. Download executable file: [![Latest release artifacts](https://img.shields.io/github/v/release/obalunenko/spamassassin-parser)](https://github.com/obalunenko/spamassassin-parser/releases/latest)
 2. Unrar archive.
 3. a. Run executable `spamassassin-parser`
    b. Run docker-compose `docker-compose -f ./docker-compose.yml up --build -d`
