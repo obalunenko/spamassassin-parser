@@ -141,7 +141,7 @@ LOOP:
 		case err := <-processor.Errors():
 			require.IsType(t, &processorError{}, err, "unexpected error type")
 
-			var merr processorError
+			var merr *processorError
 
 			ok := errors.As(err, &merr)
 
