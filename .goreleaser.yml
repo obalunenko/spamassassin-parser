@@ -88,7 +88,7 @@ archives:
       - LICENSE
       - README.md
       - docker-compose.yml
-      - env.example
+      - .env.example
 
 checksum:
   name_template: "{{ .ProjectName }}-{{ .Version }}-checksums.txt"
