@@ -4,7 +4,7 @@ set -e
 
 go test -race -coverpkg=./... -v -coverprofile coverage.out.tmp ./...
 # shellcheck disable=SC2002
-cat coverage.out.tmp | grep -v "cmd/scrum-report" > coverage.out
+cat coverage.out.tmp | grep -v "cmd/spamassassin-parser" > coverage.out
 rm -rf coverage.out.tmp
 gocov convert coverage.out > coverage.out.json
 gocov report coverage.out.json
