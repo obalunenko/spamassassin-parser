@@ -22,7 +22,12 @@ builds:
       - amd64
       - arm
     main: ./cmd/spamassassin-parser
-    ldflags: -s -w -X main.version={{.Version}} -X main.commit={{.ShortCommit}} -X main.date={{.Date}}
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commit={{.ShortCommit}}
+      - -X main.date={{.Date}}
+      - -X main.goVersion={{.Env.GOVERSION}}
 
 dockers:
   # You can have multiple Docker images.
@@ -37,11 +42,8 @@ dockers:
     goarm: ''
 
     # Build IDs to gather the binaries from.
-    builds:
-      - service
-    # Name templates of the built binaries that should be used.
-    binaries:
-      - spamassassin-parser
+    ids: ['service', 'spamassassin-parser']
+
     image_templates:
       - "olegbalunenko/spamassassin-parser:latest"
       - "olegbalunenko/spamassassin-parser:{{ .Tag }}"

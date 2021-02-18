@@ -26,6 +26,7 @@ help:
 ## Compile executable
 compile:
 	./scripts/compile.sh
+.PHONY: compile
 
 ## lint project
 lint:
@@ -61,20 +62,45 @@ release:
 	./scripts/release.sh
 .PHONY: release
 
-## Fix imports sorting
+## Release local snapshot
+release-local-snapshot:
+	${call colored, release is running...}
+	./scripts/local-snapshot-release.sh
+.PHONY: release-local-snapshot
+
+## Fix imports sorting.
 imports:
+	${call colored, fix-imports is running...}
 	./scripts/fix-imports.sh
 .PHONY: imports
 
-## dependencies - fetch all dependencies for sripts
-dependencies:
-	./scripts/get-dependencies.sh
-.PHONY: dependencies
+## Format code.
+fmt:
+	${call colored, fmt is running...}
+	./scripts/fmt.sh
+.PHONY: fmt
 
-## Sync dependencies
-gomod:
-	./scripts/gomod.sh
-.PHONY: gomod
+## Format code and sort imports.
+format-project: fmt imports
+.PHONY: format-project
+
+## fetch all dependencies for scripts
+install-tools:
+	./scripts/get-dependencies.sh
+.PHONY: install-tools
+
+## Sync vendor
+sync-vendor:
+	${call colored, gomod is running...}
+	./scripts/sync-vendor.sh
+.PHONY: sync-vendor
+
+## Update dependencies
+gomod-update:
+	${call colored, gomod is running...}
+	go get -u -v ./...
+	make sync-vendor
+.PHONY: gomod-update
 
 vet:
 	./scripts/vet.sh

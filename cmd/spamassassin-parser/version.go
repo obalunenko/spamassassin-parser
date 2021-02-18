@@ -8,15 +8,17 @@ import (
 const unset = "unset"
 
 var ( // build info
-	version = unset
-	date    = unset
-	commit  = unset
+	version   = unset
+	date      = unset
+	commit    = unset
+	goversion = unset
 )
 
 func printVersion() {
 	log.WithFields(log.Fields{
-		"version": version,
-		"date":    date,
-		"commit":  commit,
+		"version":   version,
+		"date":      date,
+		"commit":    commit,
+		"goversion": goversion,
 	}).Info("Build info")
 }

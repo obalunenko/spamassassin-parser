@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
+set -e
 
 # Get new tags from the remote
-git fetch --tags
+git fetch --tags -f
 
 # Get the latest tag name
 latestTag=$(git describe --tags $(git rev-list --tags --max-count=1))
-echo "${latestTag}"
+echo ${latestTag}
 
-echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
+export GOVERSION=$(go version | awk '{print $3;}')
 
-curl -sL https://git.io/goreleaser | bash
+goreleaser release --rm-dist

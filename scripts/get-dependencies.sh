@@ -1,32 +1,45 @@
 #!/usr/bin/env bash
 
-function get_dependencies() {
-  cd .tools || exit
 
-  declare -a packages=(
-    "golang.org/x/tools/cmd/cover/..."
-    "github.com/mattn/goveralls/..."
-    "github.com/Bubblyworld/gogroup/..."
-    "golang.org/x/lint/golint"
-    "github.com/kisielk/errcheck"
-    "honnef.co/go/tools/cmd/staticcheck"
-    "github.com/client9/misspell/cmd/misspell"
-    "mvdan.cc/unparam"
-    "github.com/mgechev/revive"
-    "golang.org/x/tools/cmd/stringer"
-  )
-
-  ## now loop through the above array
-  for pkg in "${packages[@]}"; do
-    echo "$pkg"
-    go get -u -v "$pkg"
-  done
-
-  curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(go env GOPATH)/bin
-
-  cd - || exit
+function check_status() {
+  # first param is error message to print in case of error
+  if [ $? -ne 0 ]
+    then
+      if [ -n "$1" ]
+	    then
+          echo "$1"
+      fi
+      exit 1
+  fi
 }
 
-echo Gonna to update go tools and packages...
-get_dependencies
-echo All is done!
+function run_go_install_in_parallel() {
+  cd ./tools || exit 1
+	# params are installing go apps
+	apps=()
+	export GO111MODULE="on"
+	for app in "$@"
+	do
+	    if [ -d ${app} ]
+		then
+		  apps+=(${app}/...)
+		  echo "[INFO]: Going to build $app binary..."
+		else
+		  echo "[WARN]: $app not found, skipping..."
+	     fi
+	done
+    go install -mod=vendor "${apps[@]}"
+    export GO111MODULE="auto"
+    check_status "[FAIL]: build failed!"
+    echo "[SUCCESS]: build finished."
+}
+
+
+run_go_install_in_parallel \
+"./vendor/golang.org/x/tools/cmd/cover" \
+"./vendor/github.com/mattn/goveralls" \
+"./vendor/github.com/vasi-stripe/gogroup/cmd/gogroup" \
+"./vendor/github.com/axw/gocov/gocov" \
+"./vendor/github.com/matm/gocov-html" \
+"./vendor/github.com/golangci/golangci-lint/cmd/golangci-lint" \
+"./vendor/golang.org/x/tools/cmd/stringer" \
