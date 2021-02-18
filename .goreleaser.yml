@@ -56,7 +56,7 @@ dockers:
     skip_push: false
 
     # Path to the Dockerfile (from the project root).
-    dockerfile: releaser.Dockerfile
+    dockerfile: build/docker/spamassassin-parser/releaser.Dockerfile
 
 
     # If your Dockerfile copies files other than the binary itself,
