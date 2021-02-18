@@ -5,7 +5,7 @@ services:
     container_name: spamassassin-parser
     networks:
       - spamassassin_dev
-    image: olegbalunenko/spamassassin-parser
+    image: docker.io/olegbalunenko/spamassassin-parser:latest
     environment:
       SPAMASSASSIN_INPUT: "data/input"
       SPAMASSASSIN_RESULT: "data/result"

@@ -1,17 +1,24 @@
-FROM golang:1.14-alpine as build-container
+ARG DOCKER_REPO=olegbalunenko
+FROM ${DOCKER_REPO}/spamassassin-go-base:latest as build-container
+
+MAINTAINER Oleg Balunenko
 
 ENV PROJECT_DIR=${GOPATH}/src/github.com/obalunenko/spamassassin-parser
 
-RUN apk update && \
-    apk upgrade && \
-    apk add --no-cache git musl-dev make gcc
-
 RUN mkdir -p ${PROJECT_DIR}
 
-COPY ./  ${PROJECT_DIR}
 WORKDIR ${PROJECT_DIR}
-# check vendor
-RUN make gomod
+
+COPY .git .git
+COPY cmd cmd
+COPY internal internal
+COPY pkg pkg
+COPY scripts scripts
+COPY vendor vendor
+COPY go.mod go.mod
+COPY go.sum go.sum
+COPY Makefile Makefile
+
 # vet project
 RUN make vet
 # compile executable
@@ -21,7 +28,7 @@ RUN mkdir /app
 RUN cp ./bin/spamassassin-parser /app/spamassassin-parser
 
 
-FROM alpine:3.11.3 as deployment-container
+FROM alpine:3.13 as deployment-container
 RUN apk add -U --no-cache ca-certificates
 
 

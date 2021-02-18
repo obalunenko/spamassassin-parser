@@ -7,7 +7,7 @@ services:
       - spamassassin_dev
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: build/docker/spamassassin-parser/Dockerfile
     environment:
       SPAMASSASSIN_INPUT: "data/input"
       SPAMASSASSIN_OUTPUT: "data/result"
