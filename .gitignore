@@ -13,13 +13,13 @@
 .idea/
 release/
 
-dist/
+./dist/
 .vscode/
-archive/
-input/
-output/
-bin/
+/archive/
+/input/
+/output/
+/bin/
 env
-data/
+/data/
 
 .DS_STORE
