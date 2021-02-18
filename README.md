@@ -12,7 +12,7 @@
 [![License](https://img.shields.io/github/license/obalunenko/spamassassin-parser)](/LICENSE)
 
 <p align="center">
-  <img src="https://github.com/obalunenko/spamassassin-parser/blob/master/.assets/assassingopher.png" alt="" width="300">
+  <img src="https://github.com/obalunenko/spamassassin-parser/blob/master/.github/images/assassingopher.png" alt="" width="300">
   <br>
 </p>
 
