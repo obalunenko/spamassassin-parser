@@ -1,6 +1,12 @@
 NAME=spamassassin-parser-cli
 BIN_DIR=./bin
 
+SHELL := env DOCKER_REPO=$(DOCKER_REPO) $(SHELL)
+DOCKER_REPO?=olegbalunenko
+
+SHELL := env VERSION=$(VERSION) $(SHELL)
+VERSION ?= $(shell git describe --tags $(git rev-list --tags --max-count=1))
+
 TARGET_MAX_CHAR_NUM=20
 
 ## Show help
@@ -26,6 +32,7 @@ help:
 ## Compile executable
 compile:
 	./scripts/compile.sh
+.PHONY: compile
 
 ## lint project
 lint:
@@ -61,48 +68,88 @@ release:
 	./scripts/release.sh
 .PHONY: release
 
-## Fix imports sorting
+## Release local snapshot
+release-local-snapshot:
+	${call colored, release is running...}
+	./scripts/local-snapshot-release.sh
+.PHONY: release-local-snapshot
+
+## Fix imports sorting.
 imports:
+	${call colored, fix-imports is running...}
 	./scripts/fix-imports.sh
 .PHONY: imports
 
-## dependencies - fetch all dependencies for sripts
-dependencies:
-	./scripts/get-dependencies.sh
-.PHONY: dependencies
+## Format code.
+fmt:
+	${call colored, fmt is running...}
+	./scripts/fmt.sh
+.PHONY: fmt
 
-## Sync dependencies
-gomod:
-	./scripts/gomod.sh
-.PHONY: gomod
+## Format code and sort imports.
+format-project: fmt imports
+.PHONY: format-project
+
+## fetch all dependencies for scripts
+install-tools:
+	./scripts/get-dependencies.sh
+.PHONY: install-tools
+
+## Sync vendor
+sync-vendor:
+	${call colored, gomod is running...}
+	./scripts/sync-vendor.sh
+.PHONY: sync-vendor
+
+## Update dependencies
+gomod-update:
+	${call colored, gomod is running...}
+	go get -u -v ./...
+	make sync-vendor
+.PHONY: gomod-update
 
 vet:
 	./scripts/vet.sh
 .PHONY: vet
 
 ## Docker compose up
-docker-up:
+docker-compose-up:
 	docker-compose -f ./docker-compose.yml up --build -d
 
-.PHONY: docker-up
+.PHONY: docker-compose-up
 
 ## Docker compose down
-docker-down:
+docker-compose-down:
 	docker-compose -f ./docker-compose.yml down --volumes
 
-.PHONY: docker-down
+.PHONY: docker-compose-down
 
 ## Docker compose up
-docker-up-dev:
+docker-compose-up-dev:
 	docker-compose -f ./docker-compose.dev.yml up --build -d
 
-.PHONY: docker-up
+.PHONY: docker-compose-up-dev
 
 ## Docker compose down
-docker-down-dev:
+docker-compose-down-dev:
 	docker-compose -f ./dev.docker-compose.dev.yml down --volumes
 
-.PHONY: docker-down
+.PHONY: docker-compose-down-dev
+
+## Build docker base image for GO
+docker-build-base-go-prod:
+	${call colored, docker-build-base-go-prod is running...}
+	docker build --rm --no-cache -t ${DOCKER_REPO}/spamassassin-go-base:${VERSION} -t ${DOCKER_REPO}/spamassassin-go-base:latest -f ./build/docker/base-docker/go.Dockerfile .
+.PHONY: docker-build-base-go-prod
+
+## Build admin service prod docker image.
+docker-build-spamassassin-prod:
+	${call colored, docker-build-spamassassin-prod is running...}
+	docker build --rm --no-cache -t ${DOCKER_REPO}/spamassassin-parser:${VERSION} -t ${DOCKER_REPO}/spamassassin-parser:latest -f ./build/docker/spamassassin-parser/Dockerfile .
+.PHONY: docker-build-admin-prod
+
+docker-build-prod: docker-build-base-go-prod docker-build-spamassassin-prod
+.PHONY: docker-build-prod
 
 .DEFAULT_GOAL := test
 
