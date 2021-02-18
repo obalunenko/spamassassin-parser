@@ -51,5 +51,4 @@ const (
 	edgeUnsafeConversion
 	edgeUsedConstant
 	edgeVarDecl
-	edgeIgnored
 )

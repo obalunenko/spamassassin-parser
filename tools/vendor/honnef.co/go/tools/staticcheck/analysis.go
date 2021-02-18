@@ -1,11 +1,9 @@
 package staticcheck
 
 import (
-	"honnef.co/go/tools/analysis/facts"
-	"honnef.co/go/tools/analysis/facts/nilness"
-	"honnef.co/go/tools/analysis/facts/typedness"
-	"honnef.co/go/tools/analysis/lint"
+	"honnef.co/go/tools/facts"
 	"honnef.co/go/tools/internal/passes/buildir"
+	"honnef.co/go/tools/lint/lintutil"
 
 	"golang.org/x/tools/go/analysis"
 	"golang.org/x/tools/go/analysis/passes/inspect"
@@ -20,7 +18,7 @@ func makeCallCheckerAnalyzer(rules map[string]CallCheck, extraReqs ...*analysis.
 	}
 }
 
-var Analyzers = lint.InitializeAnalyzers(Docs, map[string]*analysis.Analyzer{
+var Analyzers = lintutil.InitializeAnalyzers(Docs, map[string]*analysis.Analyzer{
 	"SA1000": makeCallCheckerAnalyzer(checkRegexpRules),
 	"SA1001": {
 		Run:      CheckTemplate,
@@ -185,14 +183,6 @@ var Analyzers = lint.InitializeAnalyzers(Docs, map[string]*analysis.Analyzer{
 		Run:      CheckSingleArgAppend,
 		Requires: []*analysis.Analyzer{inspect.Analyzer, facts.Generated, facts.TokenFile},
 	},
-	"SA4022": {
-		Run:      CheckAddressIsNil,
-		Requires: []*analysis.Analyzer{inspect.Analyzer},
-	},
-	"SA4023": {
-		Run:      CheckTypedNilInterface,
-		Requires: []*analysis.Analyzer{buildir.Analyzer, typedness.Analysis, nilness.Analysis},
-	},
 
 	"SA5000": {
 		Run:      CheckNilMaps,
@@ -235,11 +225,6 @@ var Analyzers = lint.InitializeAnalyzers(Docs, map[string]*analysis.Analyzer{
 		Run:      CheckMaybeNil,
 		Requires: []*analysis.Analyzer{buildir.Analyzer},
 	},
-	"SA5012": {
-		Run:       CheckEvenSliceLength,
-		FactTypes: []analysis.Fact{new(evenElements)},
-		Requires:  []*analysis.Analyzer{buildir.Analyzer},
-	},
 
 	"SA6000": makeCallCheckerAnalyzer(checkRegexpMatchLoopRules),
 	"SA6001": {
@@ -274,8 +259,9 @@ var Analyzers = lint.InitializeAnalyzers(Docs, map[string]*analysis.Analyzer{
 	},
 	// Filtering generated code because it may include empty structs generated from data models.
 	"SA9005": makeCallCheckerAnalyzer(checkNoopMarshal, facts.Generated),
-	"SA9006": {
-		Run:      CheckStaticBitShift,
+
+	"SA4022": {
+		Run:      CheckAddressIsNil,
 		Requires: []*analysis.Analyzer{inspect.Analyzer},
 	},
 })

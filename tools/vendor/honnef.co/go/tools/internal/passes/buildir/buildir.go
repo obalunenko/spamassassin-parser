@@ -15,23 +15,22 @@ import (
 	"go/types"
 	"reflect"
 
-	"honnef.co/go/tools/go/ir"
-
 	"golang.org/x/tools/go/analysis"
+	"honnef.co/go/tools/ir"
 )
 
-type noReturn struct {
-	Kind ir.NoReturn
-}
+type willExit struct{}
+type willUnwind struct{}
 
-func (*noReturn) AFact() {}
+func (*willExit) AFact()   {}
+func (*willUnwind) AFact() {}
 
 var Analyzer = &analysis.Analyzer{
 	Name:       "buildir",
 	Doc:        "build IR for later passes",
 	Run:        run,
 	ResultType: reflect.TypeOf(new(IR)),
-	FactTypes:  []analysis.Fact{new(noReturn)},
+	FactTypes:  []analysis.Fact{new(willExit), new(willUnwind)},
 }
 
 // IR provides intermediate representation for all the
@@ -69,9 +68,13 @@ func run(pass *analysis.Pass) (interface{}, error) {
 				irpkg := prog.CreatePackage(p, nil, nil, true)
 				for _, fn := range irpkg.Functions {
 					if ast.IsExported(fn.Name()) {
-						var noRet noReturn
-						if pass.ImportObjectFact(fn.Object(), &noRet) {
-							fn.NoReturn = noRet.Kind
+						var exit willExit
+						var unwind willUnwind
+						if pass.ImportObjectFact(fn.Object(), &exit) {
+							fn.WillExit = true
+						}
+						if pass.ImportObjectFact(fn.Object(), &unwind) {
+							fn.WillUnwind = true
 						}
 					}
 				}
@@ -98,8 +101,11 @@ func run(pass *analysis.Pass) (interface{}, error) {
 	}
 	for _, fn := range irpkg.Functions {
 		addAnons(fn)
-		if fn.NoReturn > 0 {
-			pass.ExportObjectFact(fn.Object(), &noReturn{fn.NoReturn})
+		if fn.WillExit {
+			pass.ExportObjectFact(fn.Object(), new(willExit))
+		}
+		if fn.WillUnwind {
+			pass.ExportObjectFact(fn.Object(), new(willUnwind))
 		}
 	}
 

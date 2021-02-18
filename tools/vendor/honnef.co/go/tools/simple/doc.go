@@ -1,6 +1,6 @@
 package simple
 
-import "honnef.co/go/tools/analysis/lint"
+import "honnef.co/go/tools/lint"
 
 var Docs = map[string]*lint.Documentation{
 	"S1000": {
@@ -368,13 +368,9 @@ After:
 
 	"S1030": {
 		Title: `Use bytes.Buffer.String or bytes.Buffer.Bytes`,
-		Text: `bytes.Buffer has both a String and a Bytes method. It is almost never
+		Text: `bytes.Buffer has both a String and a Bytes method. It is never
 necessary to use string(buf.Bytes()) or []byte(buf.String()) – simply
-use the other method.
-
-The only exception to this are map lookups. Due to a compiler optimization,
-m[string(buf.Bytes())] is more efficient than m[buf.String()].
-`,
+use the other method.`,
 		Since: "2017.1",
 	},
 

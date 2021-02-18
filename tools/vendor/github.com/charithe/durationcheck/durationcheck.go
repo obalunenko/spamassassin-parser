@@ -92,8 +92,6 @@ func isUnacceptableExpr(pass *analysis.Pass, expr ast.Expr) bool {
 		return !isAcceptableNestedExpr(pass, e)
 	case *ast.UnaryExpr:
 		return !isAcceptableNestedExpr(pass, e)
-	case *ast.SelectorExpr:
-		return !isAcceptableNestedExpr(pass, e)
 	}
 
 	return true
@@ -144,9 +142,6 @@ func isAcceptableNestedExpr(pass *analysis.Pass, n ast.Expr) bool {
 	case *ast.Ident:
 		return isAcceptableIdent(pass, e)
 	case *ast.CallExpr:
-		t := pass.TypesInfo.TypeOf(e)
-		return !isDuration(t)
-	case *ast.SelectorExpr:
 		t := pass.TypesInfo.TypeOf(e)
 		return !isDuration(t)
 	}

@@ -1,6 +1,6 @@
 package stylecheck
 
-import "honnef.co/go/tools/analysis/lint"
+import "honnef.co/go/tools/lint"
 
 var Docs = map[string]*lint.Documentation{
 	"ST1000": {
