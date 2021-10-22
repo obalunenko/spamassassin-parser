@@ -2,9 +2,9 @@
 .gitattributes
 .gitignore
 .goreleaser.yml
-.reviewdog.yml
-.revive.yml
-.travis.yml
-docker-compose.yml
-sonar-project.properties.yml
+deployments/
+sonar-project.properties
 dist/
+bin/
+coverage/
+.github/

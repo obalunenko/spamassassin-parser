@@ -11,14 +11,6 @@ import (
 	"github.com/obalunenko/spamassassin-parser/pkg/utils"
 )
 
-const (
-	testdata    = "testdata"
-	goldenFile1 = "report1.golden.json"
-	goldenFile2 = "report2.golden.json"
-	testReport1 = "report1.txt"
-	testReport2 = "report2.txt"
-)
-
 func TestProcessReport(t *testing.T) {
 	type args struct {
 		filepath string
@@ -37,20 +29,20 @@ func TestProcessReport(t *testing.T) {
 		{
 			name: "process report type 1",
 			args: args{
-				filepath: filepath.Join("..", testdata, testReport1),
+				filepath: filepath.FromSlash("../testdata/report1.txt"),
 			},
 			expected: expected{
-				filepath: filepath.Join("..", testdata, goldenFile1),
+				filepath: filepath.FromSlash("../testdata/report1.golden.json"),
 				wantErr:  false,
 			},
 		},
 		{
 			name: "process report type 2",
 			args: args{
-				filepath: filepath.Join("..", testdata, testReport2),
+				filepath: filepath.FromSlash("../testdata/report2.txt"),
 			},
 			expected: expected{
-				filepath: filepath.Join("..", testdata, goldenFile2),
+				filepath: filepath.FromSlash("../testdata/report2.golden.json"),
 				wantErr:  false,
 			},
 		},

@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/sirupsen/logrus"
+	log "github.com/obalunenko/spamassassin-parser/pkg/logger"
 )
 
 // WriteFile creates file with passed name at passed dir and writes data.
@@ -43,7 +43,7 @@ func WriteFile(fname, dir string, data string) error {
 }
 
 // MoveFile moves file from base dir to target.
-func MoveFile(name string, sourceDir, destDir string) error {
+func MoveFile(ctx context.Context, name string, sourceDir, destDir string) error {
 	sourcePath := filepath.Join(sourceDir, name)
 
 	inputFile, err := os.Open(filepath.Clean(sourcePath))
@@ -53,7 +53,7 @@ func MoveFile(name string, sourceDir, destDir string) error {
 
 	defer func() {
 		if err = inputFile.Close(); err != nil {
-			log.Errorf("failed to close inputFile: %v", err)
+			log.WithError(ctx, err).Error("failed to close inputFile")
 		}
 	}()
 
@@ -70,7 +70,7 @@ func MoveFile(name string, sourceDir, destDir string) error {
 
 	defer func() {
 		if err = outputFile.Close(); err != nil {
-			log.Errorf("failed to close outputFile: %v", err)
+			log.WithError(ctx, err).Error("failed to close outputFile")
 		}
 	}()
 
@@ -96,18 +96,27 @@ func createDirIfNotExist(dir string, mode os.FileMode) error {
 	return nil
 }
 
+// PollResponse represents response of directory poll. Filename of new file if it appears, and error if smth went wrong.
+type PollResponse struct {
+	File string
+	Err  error
+}
+
 // PollDirectory will pol for files that needs to be processed.
-func PollDirectory(ctx context.Context, dir string, availableExtensions map[string]bool, fileChan chan string) {
+func PollDirectory(ctx context.Context, dir string, availableExtensions map[string]bool, respChan chan<- PollResponse) {
 	const pollInterval int = 1
 
 	ticker := time.NewTicker(time.Duration(pollInterval) * time.Second)
 
 	defer func() {
-		close(fileChan)
+		close(respChan)
+
 		ticker.Stop()
 	}()
 
-	log.Printf("started to watch directory <%s> for data files", dir)
+	log.WithFields(ctx, log.Fields{
+		"dir": dir,
+	}).Info("started to watch directory for data files")
 
 	var lastFile string
 
@@ -118,7 +127,10 @@ func PollDirectory(ctx context.Context, dir string, availableExtensions map[stri
 		case <-ticker.C:
 			files, err := ioutil.ReadDir(dir)
 			if err != nil {
-				log.Error(err)
+				respChan <- PollResponse{
+					File: "",
+					Err:  fmt.Errorf("internal/fileutil: readdir"),
+				}
 
 				return
 			}
@@ -128,18 +140,32 @@ func PollDirectory(ctx context.Context, dir string, availableExtensions map[stri
 					continue
 				}
 
+				if file.Name() == "" {
+					continue
+				}
+
 				ext := filepath.Ext(file.Name())
 				if ext != "" {
 					ext = strings.TrimPrefix(ext, ".")
 				}
 
 				if file.Name() == lastFile {
-					log.Warnf("Cannot process the last known file: %s", lastFile)
+					respChan <- PollResponse{
+						File: "",
+						Err:  fmt.Errorf("cannot porcess the last known file, hanged"),
+					}
+
+					log.WithFields(ctx, log.Fields{
+						"last_file": lastFile,
+					}).Warn("internal/fileutil: Cannot process the last known file")
 				}
 
 				_, ok := availableExtensions[ext]
 				if ok && file.Name() != lastFile {
-					fileChan <- file.Name()
+					respChan <- PollResponse{
+						File: file.Name(),
+						Err:  nil,
+					}
 
 					lastFile = file.Name()
 

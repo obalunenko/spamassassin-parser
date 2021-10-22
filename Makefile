@@ -29,127 +29,232 @@ help:
 
 
 
-## Compile executable
-compile:
-	./scripts/compile.sh
-.PHONY: compile
+build: compile-spamassassin-parser-be
+.PHONY: build
 
-## lint project
-lint:
-	./scripts/run-linters.sh
-.PHONY: lint
+compile-spamassassin-parser-be:
+	./scripts/build/spamassassin-parser-be.sh
+.PHONY: compile-spamassassin-parser-be
 
-lint-ci:
-	./scripts/run-linters-ci.sh
-.PHONY: lint-ci
-
-
-## format markdown files in project
-pretty-markdown:
-	find . -name '*.md' -not -wholename './vendor/*' | xargs prettier --write
-.PHONY: pretty-markdown
-
-## Test all packages
-test:
-	./scripts/run-tests.sh
-.PHONY: test
-
-## Test coverage
+## Test coverage report.
 test-cover:
-	./scripts/coverage.sh
+	${call colored, test-cover is running...}
+	./scripts/tests/coverage.sh
 .PHONY: test-cover
 
-new-version: lint test compile
-	./scripts/version.sh
-.PHONY: new-version
+## Open coverage report.
+open-cover-report: test-cover
+	./scripts/open-coverage-report.sh
+.PHONY: open-cover-report
 
-## Release
-release:
-	./scripts/release.sh
-.PHONY: release
+update-readme-cover: compile test-cover
+	./scripts/update-readme-coverage.sh
+.PHONY: update-readme-cover
 
-## Release local snapshot
-release-local-snapshot:
-	${call colored, release is running...}
-	./scripts/local-snapshot-release.sh
-.PHONY: release-local-snapshot
+test:
+	./scripts/tests/run.sh
+.PHONY: test
+
+coverage:
+	make cover
+
+configure: sync-vendor
+
+sync-vendor:
+	./scripts/sync-vendor.sh
+.PHONY: sync-vendor
 
 ## Fix imports sorting.
 imports:
 	${call colored, fix-imports is running...}
-	./scripts/fix-imports.sh
+	./scripts/style/fix-imports.sh
 .PHONY: imports
 
-## Format code.
+## Format code with go fmt.
 fmt:
 	${call colored, fmt is running...}
-	./scripts/fmt.sh
+	./scripts/style/fmt.sh
 .PHONY: fmt
 
 ## Format code and sort imports.
 format-project: fmt imports
 .PHONY: format-project
 
-## fetch all dependencies for scripts
 install-tools:
-	./scripts/get-dependencies.sh
+	./scripts/install/vendored-tools.sh
 .PHONY: install-tools
 
-## Sync vendor
-sync-vendor:
-	${call colored, gomod is running...}
-	./scripts/sync-vendor.sh
-.PHONY: sync-vendor
-
-## Update dependencies
-gomod-update:
-	${call colored, gomod is running...}
-	go get -u -v ./...
-	make sync-vendor
-.PHONY: gomod-update
-
+## vet project
 vet:
-	./scripts/vet.sh
+	${call colored, vet is running...}
+	./scripts/linting/run-vet.sh
 .PHONY: vet
 
-## Docker compose up
-docker-compose-up:
-	docker-compose -f ./docker-compose.yml up --build -d
+## Run full linting
+lint-full:
+	./scripts/linting/run-linters.sh
+.PHONY: lint-full
 
-.PHONY: docker-compose-up
+## Run linting for build pipeline
+lint-pipeline:
+	./scripts/linting/run-linters-pipeline.sh
+.PHONY: lint-pipeline
 
-## Docker compose down
-docker-compose-down:
-	docker-compose -f ./docker-compose.yml down --volumes
+## recreate all generated code and swagger documentation.
+codegen:
+	${call colored, codegen is running...}
+	./scripts/codegen/go-generate.sh
+.PHONY: codegen
 
-.PHONY: docker-compose-down
+## recreate all generated code and swagger documentation and format code.
+generate: codegen format-project vet
+.PHONY: generate
 
-## Docker compose up
-docker-compose-up-dev:
-	docker-compose -f ./docker-compose.dev.yml up --build -d
+## Release
+release:
+	./scripts/release/release.sh
+.PHONY: release
 
-.PHONY: docker-compose-up-dev
+## Release local snapshot
+release-local-snapshot:
+	${call colored, release is running...}
+	./scripts/release/local-snapshot-release.sh
+.PHONY: release-local-snapshot
 
-## Docker compose down
-docker-compose-down-dev:
-	docker-compose -f ./dev.docker-compose.dev.yml down --volumes
+## Issue new release.
+new-version: vet test compile
+	./scripts/release/new-version.sh
+.PHONY: new-release
 
-.PHONY: docker-compose-down-dev
+
+
+######################################
+############### DOCKER ###############
+######################################
+
+################ PROD #################
+
+## Push all prod images to registry.
+docker-push-prod-images:
+	${call colored, docker-push-prod-images is running...}
+	./scripts/docker/push-all-images-to-registry.sh ${DOCKER_REPO}
+.PHONY: docker-push-prod-images
+
+## Build docker base images.
+docker-build-base-prod: docker-build-base-go-prod
+.PHONY: docker-build-base-prod
 
 ## Build docker base image for GO
 docker-build-base-go-prod:
 	${call colored, docker-build-base-go-prod is running...}
-	docker build --rm --no-cache -t ${DOCKER_REPO}/spamassassin-go-base:${VERSION} -t ${DOCKER_REPO}/spamassassin-go-base:latest -f ./build/docker/base-docker/go.Dockerfile .
+	./scripts/docker/build/prod/go-base.sh
 .PHONY: docker-build-base-go-prod
 
-## Build admin service prod docker image.
-docker-build-spamassassin-prod:
-	${call colored, docker-build-spamassassin-prod is running...}
-	docker build --rm --no-cache -t ${DOCKER_REPO}/spamassassin-parser:${VERSION} -t ${DOCKER_REPO}/spamassassin-parser:latest -f ./build/docker/spamassassin-parser/Dockerfile .
-.PHONY: docker-build-admin-prod
-
-docker-build-prod: docker-build-base-go-prod docker-build-spamassassin-prod
+## Build all services docker prod images for deploying to gcloud.
+docker-build-prod: docker-build-backend-prod
 .PHONY: docker-build-prod
 
-.DEFAULT_GOAL := test
+## Build all backend services docker prod images for deploying to gcloud.
+docker-build-backend-prod: docker-build-spamassassin-parser-prod
+.PHONY: docker-build-backend-prod
+
+## Build admin service prod docker image.
+docker-build-spamassassin-parser-prod:
+	${call colored, docker-build-prod backend-admin is running...}
+	./scripts/docker/build/prod/spamassassin-parser.sh
+.PHONY: docker-build-spamassassin-parser-prod
+
+## Docker compose up - deploys prod containers on docker locally.
+docker-compose-up:
+	${call colored, docker-up is running...}
+	./scripts/docker/compose/prod/up.sh
+.PHONY: docker-compose-up
+
+## Docker compose down - remove all prod containers in docker locally.
+docker-compose-down:
+	${call colored, docker-down is running...}
+	./scripts/docker/compose/prod/down.sh
+.PHONY: docker-compose-down
+
+## Docker compose stop - stops all prod containers in docker locally.
+docker-compose-stop:
+	${call colored, docker-down is running...}
+	./scripts/docker/compose/prod/stop.sh
+.PHONY: docker-compose-stop
+
+## Build all prod images: base and services.
+docker-prepare-images-prod: docker-build-base-prod docker-build-prod
+.PHONY: docker-prepare-images-prod
+
+## Prod local full deploy: build base images, build services images, deploy to docker compose
+deploy-local-prod: docker-prepare-images-prod run-local-prod
+.PHONY: deploy-local-prod
+
+## Run locally: deploy to docker compose and expose tunnels.
+run-local-prod: docker-compose-up
+.PHONY: run-local-prod
+
+## Stop the world and close tunnels.
+stop-local-prod: docker-compose-stop
+.PHONY: stop-local-prod
+
+## Open containers logs service url.
+open-container-logs:
+	./scripts/browser-opener.sh -u 'http://localhost:9999/'
+.PHONY: open-container-logs
+
+
+################## DEV ###################
+
+## Build docker base images.
+docker-build-base-dev: docker-build-base-go-dev
+.PHONY: docker-build-base-dev
+
+## Build docker base image for GO
+docker-build-base-go-dev:
+	${call colored, docker-build-base-go-dev is running...}
+	./scripts/docker/build/dev/go-base.sh
+.PHONY: docker-build-base-go-dev
+
+## Build docker dev image for running locally.
+docker-build-dev: docker-build-spamassassin-parser-dev
+.PHONY: docker-build-dev
+
+## Build admin service dev docker image.
+docker-build-spamassassin-parser-dev:
+	${call colored, docker-build-admin-dev is running...}
+	./scripts/docker/build/dev/spamassassin-parser.sh
+.PHONY: docker-build-spamassassin-parser-dev
+
+## Dev Docker-compose up with stubbed 3rd party dependencies.
+dev-docker-compose-up:
+	${call colored, dev-docker-up is running...}
+	./scripts/docker/compose/dev/up.sh
+.PHONY: dev-docker-compose-up
+
+## Docker compose down.
+dev-docker-compose-down:
+	${call colored, dev-docker-down is running...}
+	./scripts/docker/compose/dev/down.sh
+.PHONY: dev-docker-compose-down
+
+## Docker compose stop - stops all dev containers in docker locally.
+dev-docker-compose-stop:
+	${call colored, docker-down is running...}
+	./scripts/docker/compose/dev/stop.sh
+.PHONY: dev-docker-compose-stop
+
+## Dev local full deploy: build base images, build services images, deploy to docker compose
+deploy-local-dev: docker-build-base-dev docker-build-dev run-local-dev
+.PHONY: deploy-local-dev
+
+## Run locally dev: deploy to docker compose and expose tunnels.
+run-local-dev: dev-docker-compose-up
+.PHONY: run-local-dev
+
+## Stop the world and close tunnels.
+stop-local-dev: dev-docker-compose-stop
+.PHONY: stop-local-prod
+
+.DEFAULT_GOAL := help
 

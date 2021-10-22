@@ -1,7 +1,9 @@
-ARG DOCKER_REPO=olegbalunenko
-FROM ${DOCKER_REPO}/spamassassin-go-base:latest as build-container
+ARG DOCKER_REPO_BASE
+ARG DOCKER_GO_BASE_PROD_TAG=latest
+# hadolint ignore=DL3007
+FROM ${DOCKER_REPO_BASE}spamassassin-go-base-prod:${DOCKER_GO_BASE_PROD_TAG} as build-container
 
-MAINTAINER Oleg Balunenko
+MAINTAINER oleg.balunenko@gmail.com
 
 ENV PROJECT_DIR=${GOPATH}/src/github.com/obalunenko/spamassassin-parser
 
@@ -19,24 +21,44 @@ COPY go.mod go.mod
 COPY go.sum go.sum
 COPY Makefile Makefile
 
-# vet project
-RUN make vet
 # compile executable
-RUN make compile
+RUN make compile-spamassassin-parser-be && \
+    mkdir -p /app && \
+    cp ./bin/spamassassin-parser /app/spamassassin-parser
 
-RUN mkdir /app
-RUN cp ./bin/spamassassin-parser /app/spamassassin-parser
+COPY ./build/docker/spamassassin-parser/entrypoint.sh /app/entrypoint.sh
 
+COPY ./build/docker/spamassassin-parser/entrypoint.sh /app/entrypoint.sh
 
-FROM alpine:3.13 as deployment-container
-RUN apk add -U --no-cache ca-certificates
+FROM alpine:3.14.2 as deployment-container
+LABEL maintainer="oleg.balunenko@gmail.com"
 
+# Configure least privilege user
+ARG UID=1000
+ARG GID=1000
+RUN addgroup -S spamassassin -g ${UID} && \
+    adduser -S spamassassin -u ${GID} -G spamassassin -h /home/spamassassin -s /bin/sh -D spamassassin
+
+WORKDIR /
+
+ARG APK_CA_CERTIFICATES_VERSION=20191127-r5
+RUN apk update && \
+    apk add --no-cache \
+        "ca-certificates=${APK_CA_CERTIFICATES_VERSION}" \
+    rm -rf /var/cache/apk/*
+
+## Add the wait script to the image
+ARG WAIT_VERSION=2.9.0
+ADD https://github.com/ufoscout/docker-compose-wait/releases/download/${WAIT_VERSION}/wait /wait
+RUN chmod +x /wait
+
+COPY --from=build-container /app/ /
 
 RUN mkdir -p /data/input && \
     mkdir -p /data/result && \
-    mkdir -p /data/archive
+    mkdir -p /data/archive && \
+    chown -R spamassassin:spamassassin /data
 
-COPY --from=build-container /app/spamassassin-parser /spamassassin-parser
+ENTRYPOINT ["sh", "-c", "/wait && /entrypoint.sh"]
 
-ENTRYPOINT ["/spamassassin-parser"]
-
+USER spamassassin

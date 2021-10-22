@@ -23,11 +23,7 @@ builds:
       - arm
     main: ./cmd/spamassassin-parser
     ldflags:
-      - -s -w
-      - -X main.version={{.Version}}
-      - -X main.commit={{.ShortCommit}}
-      - -X main.date={{.Date}}
-      - -X main.goVersion={{.Env.GOVERSION}}
+      - "{{ .Env.GO_BUILD_LDFLAGS }}"
 
 dockers:
   # You can have multiple Docker images.
@@ -57,7 +53,8 @@ dockers:
 
     # Path to the Dockerfile (from the project root).
     dockerfile: build/docker/spamassassin-parser/releaser.Dockerfile
-
+    extra_files:
+      - build/docker/spamassassin-parser/entrypoint.sh
 
     # If your Dockerfile copies files other than the binary itself,
     # you should list them here as well.
@@ -87,8 +84,11 @@ archives:
     files:
       - LICENSE
       - README.md
-      - docker-compose.yml
       - .env.example
+      - src: deployments/docker-compose/prod/docker-compose.yml
+        dst: .
+        strip_parent: true
+
 
 checksum:
   name_template: "{{ .ProjectName }}-{{ .Version }}-checksums.txt"

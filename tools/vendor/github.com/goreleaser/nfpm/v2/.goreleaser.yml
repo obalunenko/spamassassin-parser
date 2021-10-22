@@ -1,0 +1,186 @@
+env:
+  - GO111MODULE=on
+
+before:
+  hooks:
+    - go mod tidy
+    - ./scripts/completions.sh
+    - wget -c https://raw.githubusercontent.com/goreleaser/goreleaser/master/cosign.key -O /tmp/goreleaser_cosign.key
+
+gomod:
+  proxy: true
+
+builds:
+- main: ./cmd/nfpm
+  env:
+  - CGO_ENABLED=0
+  goos:
+  - linux
+  - darwin
+  - windows
+  goarch:
+  - amd64
+  - arm64
+  mod_timestamp: '{{ .CommitTimestamp }}'
+  flags:
+    - -trimpath
+  ldflags:
+    - -s -w -X main.version={{ .Version }} -X main.commit={{ .Commit }} -X main.date={{ .CommitDate }} -X main.builtBy=goreleaser
+
+dockers:
+  - image_templates:
+      - 'goreleaser/nfpm:{{ .Tag }}-amd64'
+      - 'ghcr.io/goreleaser/nfpm:{{ .Tag }}-amd64'
+    dockerfile: Dockerfile
+    use: buildx
+    build_flag_templates:
+      - "--pull"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.name={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+      - "--label=org.opencontainers.image.source={{.GitURL}}"
+      - "--platform=linux/amd64"
+  - image_templates:
+      - 'goreleaser/nfpm:{{ .Tag }}-arm64v8'
+      - 'ghcr.io/goreleaser/nfpm:{{ .Tag }}-arm64v8'
+    dockerfile: Dockerfile
+    use: buildx
+    build_flag_templates:
+      - "--pull"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.name={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+      - "--label=org.opencontainers.image.source={{.GitURL}}"
+      - "--platform=linux/arm64/v8"
+    goarch: arm64
+
+docker_manifests:
+  - name_template: 'goreleaser/nfpm:{{ .Tag }}'
+    image_templates:
+      - 'goreleaser/nfpm:{{ .Tag }}-amd64'
+      - 'goreleaser/nfpm:{{ .Tag }}-arm64v8'
+  - name_template: 'ghcr.io/goreleaser/nfpm:{{ .Tag }}'
+    image_templates:
+      - 'ghcr.io/goreleaser/nfpm:{{ .Tag }}-amd64'
+      - 'ghcr.io/goreleaser/nfpm:{{ .Tag }}-arm64v8'
+  - name_template: 'goreleaser/nfpm:latest'
+    image_templates:
+      - 'goreleaser/nfpm:{{ .Tag }}-amd64'
+      - 'goreleaser/nfpm:{{ .Tag }}-arm64v8'
+  - name_template: 'ghcr.io/goreleaser/nfpm:latest'
+    image_templates:
+      - 'ghcr.io/goreleaser/nfpm:{{ .Tag }}-amd64'
+      - 'ghcr.io/goreleaser/nfpm:{{ .Tag }}-arm64v8'
+
+archives:
+- replacements:
+    darwin: Darwin
+    linux: Linux
+    windows: Windows
+    386: i386
+    amd64: x86_64
+  format_overrides:
+    - goos: windows
+      format: zip
+  files:
+    - README.md
+    - LICENSE.md
+    - completions/*
+
+brews:
+- tap:
+    owner: goreleaser
+    name: homebrew-tap
+  folder: Formula
+  homepage: https://nfpm.goreleaser.com
+  description: nFPM is a simple, 0-dependencies, deb, rpm and apk packager.
+  license: MIT
+  test: |
+    system "#{bin}/nfpm -v"
+  install: |-
+    bin.install "nfpm"
+    bash_completion.install "completions/nfpm.bash" => "nfpm"
+    zsh_completion.install "completions/nfpm.zsh" => "_nfpm"
+    fish_completion.install "completions/nfpm.fish"
+
+rigs:
+  - rig:
+      owner: goreleaser
+      name: fish-food
+    homepage: https://nfpm.goreleaser.com
+    description: nFPM is a simple, 0-dependencies, deb, rpm and apk packager.
+    license: MIT
+
+scoop:
+  bucket:
+    owner: goreleaser
+    name: scoop-bucket
+  homepage: https://nfpm.goreleaser.com
+  description: nFPM is a simple, 0-dependencies, deb, rpm and apk packager.
+  license: MIT
+
+nfpms:
+- file_name_template: '{{ .ProjectName }}_{{ .Arch }}'
+  homepage: https://nfpm.goreleaser.com
+  description: nFPM is a simple, 0-dependencies, deb, rpm and apk packager.
+  maintainer: Carlos Alexandro Becker <root@carlosbecker.com>
+  license: MIT
+  vendor: GoReleaser
+  formats:
+  - apk
+  - deb
+  - rpm
+  contents:
+    - src: ./completions/nfpm.bash
+      dst: /etc/bash_completion.d/nfpm
+    - src: ./completions/nfpm.fish
+      dst: /usr/share/fish/completions/nfpm.fish
+    - src: ./completions/nfpm.zsh
+      dst: /usr/local/share/zsh/site-functions/_nfpm
+
+
+furies:
+  - account: goreleaser
+
+signs:
+- cmd: cosign
+  stdin: '{{ .Env.COSIGN_PWD }}'
+  args: ["sign-blob", "-key=/tmp/goreleaser_cosign.key", "-output=${signature}", "${artifact}"]
+  artifacts: checksum
+
+docker_signs:
+- artifacts: manifests
+  stdin: '{{ .Env.COSIGN_PWD }}'
+  args: ["sign", "-key=/tmp/goreleaser_cosign.key", "${artifact}"]
+
+changelog:
+  sort: asc
+  use: github
+  filters:
+    exclude:
+    - '^docs:'
+    - '^test:'
+    - '^chore'
+    - Merge pull request
+    - Merge branch
+    - go mod tidy
+
+checksum:
+  name_template: 'checksums.txt'
+
+release:
+  footer: |
+    ---
+
+    - Check out [GoReleaser](https://goreleaser.com): it integrates nFPM to the release pipeline of your Go projects.
+
+announce:
+  skip: "{{gt .Patch 0}}"
+  twitter:
+    enabled: true
+    message_template: "nFPM {{ .Tag }} was just released! See what's new: https://github.com/goreleaser/nfpm/releases/tag/{{ .Tag }}"
+  discord:
+    enabled: true
+    message_template: "nFPM {{ .Tag }} is out! See what's new: https://github.com/goreleaser/goreleaser/releases/tag/{{ .Tag }}"
