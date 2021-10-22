@@ -117,3 +117,7 @@ jobs:
       - name: Build
         run: |
           make build
+
+      - name: Check release
+        run: |
+          make release-local-snapshot
