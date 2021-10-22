@@ -2,23 +2,40 @@
 package main
 
 import (
-	log "github.com/sirupsen/logrus"
+	"context"
+	"fmt"
+	"os"
+	"text/tabwriter"
+
+	"github.com/obalunenko/version"
+
+	log "github.com/obalunenko/spamassassin-parser/pkg/logger"
 )
 
-const unset = "unset"
+func printVersion(ctx context.Context) {
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', tabwriter.TabIndent)
 
-var ( // build info
-	version   = unset
-	date      = unset
-	commit    = unset
-	goversion = unset
-)
+	_, err := fmt.Fprintf(w, `
+| app_name:	%s	|
+| version:	%s	|
+| short_commit:	%s	|
+| commit:	%s	|
+| build_date:	%s	|
+| goversion:	%s	|
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
 
-func printVersion() {
-	log.WithFields(log.Fields{
-		"version":   version,
-		"date":      date,
-		"commit":    commit,
-		"goversion": goversion,
-	}).Info("Build info")
+`,
+		version.GetAppName(),
+		version.GetVersion(),
+		version.GetShortCommit(),
+		version.GetCommit(),
+		version.GetBuildDate(),
+		version.GetGoVersion())
+	if err != nil {
+		log.WithError(ctx, err).Error("print version")
+	}
 }

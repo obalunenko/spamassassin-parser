@@ -42,8 +42,8 @@ header1 = ` * -0.0 RCVD_IN_DNSWL_NONE RBL: Sender listed at
     similar future email.  If you have any questions, see
     root\@localhost for details.
     Content preview:  Thanks вЂ” and can I manage multiple emails from a single
-      account?В  On Thu, Oct 17, 2019 at 2:55 AM, G-Lock Software < support@glocksoft.com
-       > wrote: > > Hi Nick, > В  > Thank you for your reply. > > We provide the
+      account?В  On Thu, Oct 17, 2019 at 2:55 AM, G-Lock Software < support@glocksoft.com
+       > wrote: > > Hi Nick, > В  > Thank you for your reply. > > We provide the
        ability to create a custom plan for your needs. For > example, you can create
        a plan for the desired number of spam tests per > month w [...]
     Content analysis details:   (-0.2 points, 10.0 required)

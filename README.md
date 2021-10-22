@@ -1,15 +1,14 @@
-# spamassassin-parser
-
+![coverbadger-tag-do-not-edit](https://img.shields.io/badge/coverage-80.47%25-brightgreen?longCache=true&style=flat)
 [![GO](https://img.shields.io/github/go-mod/go-version/oleg-balunenko/spamassassin-parser)](https://golang.org/doc/devel/release.html)
 [![Build Status](https://travis-ci.com/obalunenko/spamassassin-parser.svg?branch=master)](https://travis-ci.com/obalunenko/spamassassin-parser)
-[![Coverage Status](https://coveralls.io/repos/github/obalunenko/spamassassin-parser/badge.svg?branch=master)](https://coveralls.io/github/obalunenko/spamassassin-parser?branch=master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/obalunenko/spamassassin-parser)](https://goreportcard.com/report/github.com/obalunenko/spamassassin-parser)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=oleg-balunenko_spamassassin-parser&metric=alert_status)](https://sonarcloud.io/dashboard?id=oleg-balunenko_spamassassin-parser)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/8847ad100b3f415fa419430a58de1a2d)](https://www.codacy.com/manual/oleg.balunenko/spamassassin-parser?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=oleg-balunenko/spamassassin-parser&amp;utm_campaign=Badge_Grade)
 [![GoDoc](https://godoc.org/github.com/obalunenko/spamassassin-parser?status.svg)](https://godoc.org/github.com/obalunenko/spamassassin-parser)
 [![Latest release artifacts](https://img.shields.io/github/v/release/obalunenko/spamassassin-parser)](https://github.com/obalunenko/spamassassin-parser/releases/latest)
 [![Docker pulls](https://img.shields.io/docker/pulls/olegbalunenko/spamassassin-parser)](https://hub.docker.com/r/olegbalunenko/spamassassin-parser)
 [![License](https://img.shields.io/github/license/obalunenko/spamassassin-parser)](/LICENSE)
+
+# spamassassin-parser
 
 <p align="center">
   <img src="https://github.com/obalunenko/spamassassin-parser/blob/master/.github/images/assassingopher.png" alt="" width="300">
@@ -22,8 +21,9 @@ spamassassin-parser - a command line tool that parses spam filter reports into h
 
 1. Download executable file: [![Latest release artifacts](https://img.shields.io/github/v/release/obalunenko/spamassassin-parser)](https://github.com/obalunenko/spamassassin-parser/releases/latest)
 2. Unrar archive.
-3. a. Run executable `spamassassin-parser`
+3. a. Run executable `spamassassin-parser` with necessary flags. (see bellow list of available flags)
    b. Run docker-compose `docker-compose -f ./docker-compose.yml up --build -d`
+   c. Pull image from docker and run it with set ENV variables (see bellow list of available variables)
 
 Environment variables used:
 
@@ -32,6 +32,36 @@ Environment variables used:
   SPAMASSASSIN_RESULT: Path to directory where parserd results will be stored (default "result")
   SPAMASSASSIN_ARCHIVE: Path to dir where processed files will be moved for history (default "archive")
   SPAMASSASSIN_RECEIVE_ERRORS: Boolean value to enable receive errors from processor, if false - will be   just logged (default: "true")
+  SPAMASSASSIN_LOG_LEVEL: Outout log level
+  SPAMASSASSIN_LOG_FORMAT: Log format (json or text)
+  SPAMASSASSIN_LOG_SENTRY_DSN: Sentry DSN, if empty - disabled.
+  SPAMASSASSIN_LOG_SENTRY_TRACE: Enable sentry tracing.
+  SPAMASSASSIN_LOG_SENTRY_TRACE_LEVEL: Sentry Tracing level.
+```
+
+Flags used:
+
+```bash
+  -help bool
+        Output help for usage.
+  -archive string
+    	Archive dir path (default "archive")
+  -errors
+    	Receive parse errors (default true)
+  -input string
+    	Input dir path (default "input")
+  -log_format string
+    	Format of logs (supported values: text, json (default "text")
+  -log_level string
+    	set log level of application (default "INFO")
+  -log_sentry_dsn string
+    	Sentry DSN
+  -log_sentry_trace
+    	Enables sending stacktrace to sentry
+  -log_sentry_trace_level string
+    	The level at which to start capturing stacktraces (default "PANIC")
+  -result string
+    	Results dir path (default "result")
 ```
 
 ## Example
@@ -39,6 +69,7 @@ Environment variables used:
 report1.txt file:
 
 ```text
+
  * -0.0 RCVD_IN_DNSWL_NONE RBL: Sender listed at
     *      https://www.dnswl.org/, no trust
     *      [209.85.161.101 listed in list.dnswl.org]
@@ -52,12 +83,13 @@ report1.txt file:
     *      succeeded
     *      [0-0=1|1=LG DACOM CORPORATION|2=6.8|3=6.8|4=2661|6=0|7=19|8=3319569|9=71889|20=mail-yw1-f101|21=google.com|22=Y|23=8.0|24=8.0|25=0|40=4.1|41=4.4|43=4.3|44=5.6|45=N|46=18|48=24|53=US|54=-97.822|55=37.751|56=1000|57=1571272183]
     *  0.0 PDS_NO_HELO_DNS High profile HELO but no A record
+    
 ```
 
 Run service
 
 ```bash
-spamassassin-parser
+    spamassassin-parser
 ```
 
 - Now application will poll the directory input for new files with txt extension.

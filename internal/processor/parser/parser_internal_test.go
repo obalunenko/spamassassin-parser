@@ -11,14 +11,6 @@ import (
 	"github.com/obalunenko/spamassassin-parser/pkg/utils"
 )
 
-const (
-	testdata    = "testdata"
-	goldenFile1 = "report1.golden.json"
-	goldenFile2 = "report2.golden.json"
-	testReport1 = "report1.txt"
-	testReport2 = "report2.txt"
-)
-
 func Test_processReport(t *testing.T) {
 	type args struct {
 		filepath string
@@ -38,22 +30,22 @@ func Test_processReport(t *testing.T) {
 		{
 			name: "process report type 1",
 			args: args{
-				filepath: filepath.Join("..", testdata, testReport1),
+				filepath: filepath.FromSlash("../testdata/report1.txt"),
 				rt:       reportType1,
 			},
 			expected: expected{
-				filepath: filepath.Join("..", testdata, goldenFile1),
+				filepath: filepath.FromSlash("../testdata/report1.golden.json"),
 				wantErr:  false,
 			},
 		},
 		{
 			name: "process report type 2",
 			args: args{
-				filepath: filepath.Join("..", testdata, testReport2),
+				filepath: filepath.FromSlash("../testdata/report2.txt"),
 				rt:       reportType2,
 			},
 			expected: expected{
-				filepath: filepath.Join("..", testdata, goldenFile2),
+				filepath: filepath.FromSlash("../testdata/report2.golden.json"),
 				wantErr:  false,
 			},
 		},
@@ -63,6 +55,10 @@ func Test_processReport(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			data := utils.GetReaderFromFile(t, tt.args.filepath)
+			defer func() {
+				require.NoError(t, data.Close(), "close reader")
+			}()
+
 			parser, err := newParser(tt.args.rt)
 			require.NoError(t, err)
 			require.NotNil(t, parser)
@@ -99,7 +95,7 @@ func Test_getReportType(t *testing.T) {
 		{
 			name: "report type 1",
 			args: args{
-				filepath: filepath.Join("..", testdata, testReport1),
+				filepath: filepath.FromSlash("../testdata/report1.txt"),
 			},
 			expected: expected{
 				rt: reportType1,
@@ -108,7 +104,7 @@ func Test_getReportType(t *testing.T) {
 		{
 			name: "report type 2",
 			args: args{
-				filepath: filepath.Join("..", testdata, testReport2),
+				filepath: filepath.FromSlash("../testdata/report2.txt"),
 			},
 			expected: expected{
 				rt: reportType2,
@@ -117,7 +113,7 @@ func Test_getReportType(t *testing.T) {
 		{
 			name: "unknown type",
 			args: args{
-				filepath: filepath.Join("..", testdata, "empty.json"),
+				filepath: filepath.FromSlash("../testdata/empty.json"),
 			},
 			expected: expected{
 				rt: reportTypeUnknown,

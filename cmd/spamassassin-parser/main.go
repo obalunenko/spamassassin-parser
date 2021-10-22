@@ -9,54 +9,76 @@ import (
 	"path/filepath"
 	"sync"
 	"syscall"
+	"time"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/obalunenko/version"
 
-	"github.com/obalunenko/spamassassin-parser/internal/appconfig"
+	"github.com/obalunenko/spamassassin-parser/cmd/spamassassin-parser/internal/config"
 	"github.com/obalunenko/spamassassin-parser/internal/fileutil"
 	"github.com/obalunenko/spamassassin-parser/internal/processor"
+	log "github.com/obalunenko/spamassassin-parser/pkg/logger"
 	"github.com/obalunenko/spamassassin-parser/pkg/utils"
 )
 
 func main() {
-	defer log.Println("Exit...")
+	ctx := context.Background()
+	printVersion(ctx)
 
-	printVersion()
+	config.Load()
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	appCfg := appconfig.Load()
+	log.Init(ctx, log.Params{
+		Level:  config.LogLevel(),
+		Format: config.LogFormat(),
+		SentryParams: log.SentryParams{
+			Enabled:      config.LogSentryEnabled(),
+			DSN:          config.LogSentryDSN(),
+			TraceEnabled: config.LogSentryTraceEnabled(),
+			TraceLevel:   config.LogSentryTraceLevel(),
+			Tags: map[string]string{
+				"app_name":     version.GetAppName(),
+				"go_version":   version.GetGoVersion(),
+				"version":      version.GetVersion(),
+				"build_date":   version.GetBuildDate(),
+				"short_commit": version.GetShortCommit(),
+			},
+		},
+	})
 
-	pcCfg := processor.NewConfig()
-	pcCfg.Receive.Errors = appCfg.ReceiveErrors
+	defer log.Info(ctx, "Exit...")
 
-	pr := processor.New(pcCfg)
+	prccfg := processor.NewConfig()
+	prccfg.Receive.Errors = config.ReceiveErrors()
+
+	pr := processor.New(prccfg)
 
 	go pr.Process(ctx)
 
+	pollChan := make(chan fileutil.PollResponse)
 	fileChan := make(chan string)
 
-	go fileutil.PollDirectory(ctx, appCfg.InputDir, availableExtensions, fileChan)
+	go fileutil.PollDirectory(ctx, config.InputDir(), availableExtensions, pollChan)
 
-	go func(ctx context.Context, fileChan chan string) {
-		for {
-			select {
-			case <-ctx.Done():
+	go putToProcessing(ctx, pr, config.InputDir(), fileChan)
+
+	go func() {
+		defer func() {
+			close(fileChan)
+		}()
+
+		for resp := range pollChan {
+			if resp.Err != nil {
+				log.WithError(ctx, resp.Err).Error("poll error")
+				cancel()
+
 				return
-
-			case reportFile := <-fileChan:
-				file, err := os.Open(filepath.Clean(filepath.Join(appCfg.InputDir, reportFile)))
-				if err != nil {
-					log.Fatal(fmt.Errorf("failed to open file with report: %w", err))
-				}
-
-				go func() {
-					pr.Input() <- processor.NewInput(file, filepath.Base(file.Name()))
-				}()
 			}
+
+			fileChan <- resp.File
 		}
-	}(ctx, fileChan)
+	}()
 
 	stopChan := make(chan os.Signal, 1)
 	signal.Notify(stopChan, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
@@ -67,17 +89,68 @@ func main() {
 
 	wg.Add(waitRoutinesNum)
 
-	go process(ctx, &wg, pr, appCfg)
+	go process(ctx, &wg, pr, processParams{
+		resultDir:  config.ResultDir(),
+		archiveDir: config.ArchiveDir(),
+		inputDir:   config.InputDir(),
+	})
 
-	s := <-stopChan
-	log.Infof("Signal [%s] received", s.String())
+	select {
+	case s := <-stopChan:
+		log.WithField(ctx, "signal", s.String()).Info("Signal received")
 
-	cancel()
+		cancel()
+
+	case <-ctx.Done():
+		log.Info(ctx, "context canceled")
+	}
 
 	wg.Wait()
 }
 
-func process(ctx context.Context, wg *sync.WaitGroup, pr processor.Processor, dirsCfg appconfig.Config) {
+func putToProcessing(ctx context.Context, proc processor.Processor, inputDir string, fileChan <-chan string) {
+	var finish bool
+
+	for !finish {
+		select {
+		case <-ctx.Done():
+			finish = true
+
+		case reportFile, ok := <-fileChan:
+			if !ok {
+				log.Warn(ctx, "cmd: filechan is closed")
+				finish = true
+			}
+
+			if reportFile == "" {
+				log.Info(ctx, "cmd: empty report filename - wait for new")
+
+				time.Sleep(1 * time.Second)
+
+				continue
+			}
+
+			file, err := os.Open(filepath.Clean(filepath.Join(inputDir, reportFile)))
+			if err != nil {
+				log.WithError(ctx, err).Error("cmd: failed to open file with report")
+
+				break
+			}
+
+			go func() {
+				proc.Input() <- processor.NewInput(file, filepath.Base(file.Name()))
+			}()
+		}
+	}
+}
+
+type processParams struct {
+	resultDir  string
+	archiveDir string
+	inputDir   string
+}
+
+func process(ctx context.Context, wg *sync.WaitGroup, pr processor.Processor, params processParams) {
 	defer wg.Done()
 
 	for {
@@ -86,32 +159,38 @@ func process(ctx context.Context, wg *sync.WaitGroup, pr processor.Processor, di
 			if res != nil {
 				s, err := utils.PrettyPrint(res.Report, "", "\t")
 				if err != nil {
-					log.Error(fmt.Errorf("failed to print report: %w", err))
+					log.WithError(ctx, err).Error("failed to print report")
 				}
 
-				log.Printf("[TestID: %s] archive: \n %s \n",
-					res.TestID, s)
+				log.WithFields(ctx, log.Fields{
+					"test_id": res.TestID,
+				}).Info(fmt.Sprintf("Archive: \n %s \n", s))
 
-				if err = fileutil.WriteFile(res.TestID, dirsCfg.ResultDir, s); err != nil {
-					log.Error(fmt.Errorf("failed to write file: %w", err))
+				if err = fileutil.WriteFile(res.TestID, params.resultDir, s); err != nil {
+					log.WithError(ctx, err).Error("failed to write file")
+
+					continue
 				}
 
-				log.Infof("Moving file %s to archive folder: %s", res.TestID, dirsCfg.ArchiveDir)
+				log.WithFields(ctx, log.Fields{
+					"test_id":     res.TestID,
+					"archive_dir": params.archiveDir,
+				}).Info("Moving file to archive")
 
-				if err = fileutil.MoveFile(res.TestID, dirsCfg.InputDir, dirsCfg.ArchiveDir); err != nil {
-					log.Error(fmt.Errorf("failed to move archive file: %w", err))
+				if err = fileutil.MoveFile(ctx, res.TestID, params.inputDir, params.archiveDir); err != nil {
+					log.WithError(ctx, err).Error("failed to move archive file")
 				}
 
-				log.Info("File moved")
+				log.Info(ctx, "File moved")
 			}
 
 		case err := <-pr.Errors():
 			if err != nil {
-				log.Error(err)
+				log.WithError(ctx, err).Error("processor error received")
 			}
 
 		case <-ctx.Done():
-			log.Println("context canceled")
+			log.Info(ctx, "cmd: context canceled")
 
 			pr.Close()
 

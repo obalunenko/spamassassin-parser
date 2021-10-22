@@ -5,9 +5,8 @@ import (
 	"context"
 	"sync"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/obalunenko/spamassassin-parser/internal/processor/parser"
+	log "github.com/obalunenko/spamassassin-parser/pkg/logger"
 )
 
 // Processor manages spamassassin reports processing.
@@ -22,7 +21,7 @@ type Processor interface {
 	// Errors returns the read channel for the errors that are returned by processor.
 	// Values from channel should be read or deadlock will be occurred if in config errors channel is enabled.
 	Errors() <-chan error
-	// ProcessorInput is the output channel for the user to write messages to that they
+	// Input is the output channel for the user to write messages to that they
 	// wish to process.
 	Input() chan<- *Input
 	// Close closes underlying input channel - means that no work expected.
@@ -73,18 +72,18 @@ func (p *processor) Process(ctx context.Context) {
 			return
 		}
 
-		p.processData(in)
+		p.processData(ctx, in)
 	}
 }
 
-func (p *processor) processData(in *Input) {
+func (p *processor) processData(ctx context.Context, in *Input) {
 	if in == nil {
 		return
 	}
 
 	defer func() {
 		if err := in.Data.Close(); err != nil {
-			log.Error(err)
+			log.WithError(ctx, err).Error("processor: failed to close input reader")
 		}
 	}()
 
@@ -95,7 +94,7 @@ func (p *processor) processData(in *Input) {
 		if p.errorsChan != nil {
 			p.errorsChan <- err
 		} else {
-			log.Error(err)
+			log.WithError(ctx, err).Error("processor: failed to parse report")
 		}
 
 		return
@@ -106,7 +105,10 @@ func (p *processor) processData(in *Input) {
 	if p.resultsChan != nil {
 		p.resultsChan <- resp
 	} else {
-		log.Infof("TestID[%s]: processed\n %+v \n", resp.TestID, resp.Report)
+		log.WithFields(ctx, log.Fields{
+			"test_id": resp.TestID,
+			"report":  resp.Report,
+		}).Info("processor: processed")
 	}
 }
 
