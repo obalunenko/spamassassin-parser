@@ -16,7 +16,7 @@
   <br>
 </p>
 
-spamassassin-parser - a command line tool that parses spam filter reports into human readable json.
+spamassassin-parser - is a service that parses spam filter reports into human readable json.
 
 ## Usage
 
