@@ -1,6 +1,7 @@
 ![coverbadger-tag-do-not-edit](https://img.shields.io/badge/coverage-80.47%25-brightgreen?longCache=true&style=flat)
 [![GO](https://img.shields.io/github/go-mod/go-version/oleg-balunenko/spamassassin-parser)](https://golang.org/doc/devel/release.html)
-[![Build Status](https://travis-ci.com/obalunenko/spamassassin-parser.svg?branch=master)](https://travis-ci.com/obalunenko/spamassassin-parser)
+[![Go [test,build,lint]](https://github.com/obalunenko/spamassassin-parser/actions/workflows/test-build.yml/badge.svg)](https://github.com/obalunenko/spamassassin-parser/actions/workflows/test-build.yml)
+[![Lint & Test & Build & Release](https://github.com/obalunenko/spamassassin-parser/actions/workflows/release.yml/badge.svg)](https://github.com/obalunenko/spamassassin-parser/actions/workflows/release.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/obalunenko/spamassassin-parser)](https://goreportcard.com/report/github.com/obalunenko/spamassassin-parser)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=oleg-balunenko_spamassassin-parser&metric=alert_status)](https://sonarcloud.io/dashboard?id=oleg-balunenko_spamassassin-parser)
 [![GoDoc](https://godoc.org/github.com/obalunenko/spamassassin-parser?status.svg)](https://godoc.org/github.com/obalunenko/spamassassin-parser)
