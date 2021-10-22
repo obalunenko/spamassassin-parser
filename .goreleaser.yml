@@ -85,7 +85,7 @@ archives:
       - LICENSE
       - README.md
       - .env.example
-      - src: deployments/docker-compose/prod/docker-compose.yml
+      - src: deployments/docker-compose/release/docker-compose.yml
         dst: .
         strip_parent: true
 

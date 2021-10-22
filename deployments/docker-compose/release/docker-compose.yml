@@ -1,0 +1,57 @@
+version: '3'
+services:
+  logs:
+    restart: unless-stopped
+    container_name: spamassassin-logs
+    networks:
+      - spamassassin
+    image: 'amir20/dozzle:v3.8.0'
+    environment:
+      DOZZLE_ADDR: ':9999'
+      DOZZLE_BASE: /
+      DOZZLE_LEVEL: debug
+      DOZZLE_TAILSIZE: 300
+      DOZZLE_USERNAME: ''
+      DOZZLE_PASSWORD: ''
+      DOZZLE_KEY: ''
+      DOZZLE_FILTER: ''
+      DOZZLE_NO_ANALYTICS: 'true'
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock'
+    ports:
+      - '9999:9999'
+    expose:
+      - 9999
+
+  spamassassin-parser:
+    restart: unless-stopped
+    container_name: spamassassin-parser
+    networks:
+      - spamassassin
+    image: 'olegbalunenko/spamassassin-parser:latest'
+    environment:
+      SPAMASSASSIN_INPUT: "data/input"
+      SPAMASSASSIN_RESULT: "data/result"
+      SPAMASSASSIN_ARCHIVE: "data/archive"
+      SPAMASSASSIN_RECEIVE_ERRORS: "true"
+      SPAMASSASSIN_LOG_LEVEL: "DEBUG"
+      SPAMASSASSIN_LOG_FORMAT: "text"
+      SPAMASSASSIN_LOG_SENTRY_DSN: ""
+      SPAMASSASSIN_LOG_SENTRY_TRACE: "false"
+      SPAMASSASSIN_LOG_SENTRY_TRACE_LEVEL: "ERROR"
+
+    volumes:
+      - './mounts/spamassassin_input:/data/input'
+      - './mounts/spamassassin_result:/data/result'
+      - './mounts/spamassassin_archive:/data/archive'
+
+volumes:
+  spamassassin_input:
+    external: true
+  spamassassin_result:
+    external: true
+  spamassassin_archive:
+    external: true
+networks:
+  spamassassin:
+    driver: bridge
