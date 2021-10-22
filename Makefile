@@ -122,7 +122,7 @@ release-local-snapshot:
 .PHONY: release-local-snapshot
 
 ## Issue new release.
-new-version: vet test compile
+new-version: vet test build
 	./scripts/release/new-version.sh
 .PHONY: new-release
 
