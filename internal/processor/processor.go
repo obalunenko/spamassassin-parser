@@ -5,8 +5,9 @@ import (
 	"context"
 	"sync"
 
+	log "github.com/obalunenko/logger"
+
 	"github.com/obalunenko/spamassassin-parser/internal/processor/parser"
-	log "github.com/obalunenko/spamassassin-parser/pkg/logger"
 )
 
 // Processor manages spamassassin reports processing.

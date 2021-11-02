@@ -11,12 +11,12 @@ import (
 	"syscall"
 	"time"
 
+	log "github.com/obalunenko/logger"
 	"github.com/obalunenko/version"
 
 	"github.com/obalunenko/spamassassin-parser/cmd/spamassassin-parser/internal/config"
 	"github.com/obalunenko/spamassassin-parser/internal/fileutil"
 	"github.com/obalunenko/spamassassin-parser/internal/processor"
-	log "github.com/obalunenko/spamassassin-parser/pkg/logger"
 	"github.com/obalunenko/spamassassin-parser/pkg/utils"
 )
 

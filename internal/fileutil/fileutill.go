@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/obalunenko/spamassassin-parser/pkg/logger"
+	log "github.com/obalunenko/logger"
 )
 
 // WriteFile creates file with passed name at passed dir and writes data.
