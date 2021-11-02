@@ -7,9 +7,8 @@ import (
 	"os"
 	"text/tabwriter"
 
+	log "github.com/obalunenko/logger"
 	"github.com/obalunenko/version"
-
-	log "github.com/obalunenko/spamassassin-parser/pkg/logger"
 )
 
 func printVersion(ctx context.Context) {
