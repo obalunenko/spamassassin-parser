@@ -3,7 +3,7 @@
 [![Go [test,build,lint]](https://github.com/obalunenko/spamassassin-parser/actions/workflows/test-build.yml/badge.svg)](https://github.com/obalunenko/spamassassin-parser/actions/workflows/test-build.yml)
 [![Lint & Test & Build & Release](https://github.com/obalunenko/spamassassin-parser/actions/workflows/release.yml/badge.svg)](https://github.com/obalunenko/spamassassin-parser/actions/workflows/release.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/obalunenko/spamassassin-parser)](https://goreportcard.com/report/github.com/obalunenko/spamassassin-parser)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=obalunenko_spamassassin-parser&metric=alert_status)](https://sonarcloud.io/dashboard?id=oleg-balunenko_spamassassin-parser)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=obalunenko_spamassassin-parser&metric=alert_status)](https://sonarcloud.io/dashboard?id=obalunenko_spamassassin-parser)
 [![GoDoc](https://godoc.org/github.com/obalunenko/spamassassin-parser?status.svg)](https://godoc.org/github.com/obalunenko/spamassassin-parser)
 [![Latest release artifacts](https://img.shields.io/github/v/release/obalunenko/spamassassin-parser)](https://github.com/obalunenko/spamassassin-parser/releases/latest)
 [![Docker pulls](https://img.shields.io/docker/pulls/olegbalunenko/spamassassin-parser)](https://hub.docker.com/r/olegbalunenko/spamassassin-parser)
