@@ -9,7 +9,7 @@ import (
 )
 
 // StringOrDefault returns string environment variable value or passed default.
-func StringOrDefault(key string, defVal string) string {
+func StringOrDefault(key, defVal string) string {
 	val, ok := os.LookupEnv(key)
 	if !ok || val == "" {
 		return defVal
@@ -36,18 +36,17 @@ func BoolOrDefault(key string, defVal bool) bool {
 // SetForTesting is a helper function for tests that sets and then resets env value to original.
 // Defer should be called right after call of this function.
 // Example:
-// reset := SetForTesting(t, "SOME_ENV", "new_value")
-// defer reset().
-func SetForTesting(tb testing.TB, key string, value interface{}) func() {
+// SetForTesting(t, "SOME_ENV", "new_value")
+func SetForTesting(tb testing.TB, key string, value interface{}) {
 	original := os.Getenv(key)
 
 	if err := os.Setenv(key, fmt.Sprintf("%v", value)); err != nil {
 		tb.Fatalf("failed to set flag: %v", err)
 	}
 
-	return func() {
+	tb.Cleanup(func() {
 		if err := os.Setenv(key, original); err != nil {
 			tb.Fatalf("failed to revert flag: %v", err)
 		}
-	}
+	})
 }

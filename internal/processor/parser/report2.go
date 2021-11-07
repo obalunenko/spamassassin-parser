@@ -11,7 +11,7 @@ import (
 	"github.com/obalunenko/spamassassin-parser/internal/processor/models"
 )
 
-var reType2 = regexp.MustCompile(`(?m)([-]?\d+.\d+)[\s]+([[:word:]]+)\s+(.*[\n]?)`)
+var reType2 = regexp.MustCompile(`(?m)(-?\d+.\d+)\s+(\w+)\s+(.*\n?)`)
 
 type report2Parser struct{}
 

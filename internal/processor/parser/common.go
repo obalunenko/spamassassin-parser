@@ -9,7 +9,9 @@ import (
 )
 
 func makeHeader(score, tag, description string) (models.Headers, error) {
-	sc, err := strconv.ParseFloat(score, 64)
+	const bitsize = 64
+
+	sc, err := strconv.ParseFloat(score, bitsize)
 	if err != nil {
 		return models.Headers{}, fmt.Errorf("failed to parse score: %w", err)
 	}

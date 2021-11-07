@@ -15,7 +15,7 @@ import (
 
 // PrettyPrint appends to passed struct indents and returns a human-readable form of struct.
 // Each element of JSON object will start from indent with prefix.
-func PrettyPrint(v interface{}, prefix string, indent string) (string, error) {
+func PrettyPrint(v interface{}, prefix, indent string) (string, error) {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return "", fmt.Errorf("failed to marshal: %w", err)

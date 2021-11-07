@@ -34,10 +34,10 @@ type expected struct {
 	wantErr bool
 }
 
-func casesTestProcessor(t testing.TB) ([]test, map[string]expected) {
+func casesTestProcessor(t testing.TB) (tests []test, expResults map[string]expected) {
 	t.Helper()
 
-	tests := []test{
+	tests = []test{
 		{
 			input: input{
 				filepath: filepath.FromSlash("testdata/report1.txt"),
@@ -80,7 +80,7 @@ func casesTestProcessor(t testing.TB) ([]test, map[string]expected) {
 		},
 	}
 
-	expResults := make(map[string]expected, len(tests))
+	expResults = make(map[string]expected, len(tests))
 
 	for _, tt := range tests {
 		tt := tt

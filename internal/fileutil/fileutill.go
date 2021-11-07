@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"io/fs"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -15,7 +16,7 @@ import (
 )
 
 // WriteFile creates file with passed name at passed dir and writes data.
-func WriteFile(fname, dir string, data string) error {
+func WriteFile(fname, dir, data string) error {
 	if ext := filepath.Ext(filepath.Base(fname)); ext != "" {
 		fname = strings.TrimSuffix(fname, ext)
 	}
@@ -43,7 +44,7 @@ func WriteFile(fname, dir string, data string) error {
 }
 
 // MoveFile moves file from base dir to target.
-func MoveFile(ctx context.Context, name string, sourceDir, destDir string) error {
+func MoveFile(ctx context.Context, name, sourceDir, destDir string) error {
 	sourcePath := filepath.Join(sourceDir, name)
 
 	inputFile, err := os.Open(filepath.Clean(sourcePath))
@@ -102,6 +103,60 @@ type PollResponse struct {
 	Err  error
 }
 
+func newPollResponse(file string, err error) PollResponse {
+	return PollResponse{
+		File: file,
+		Err:  err,
+	}
+}
+
+type poller struct {
+	lastFile            string
+	availableExtensions map[string]bool
+}
+
+func newPoller(availableExtensions map[string]bool) poller {
+	return poller{
+		lastFile:            "",
+		availableExtensions: availableExtensions,
+	}
+}
+
+func (p *poller) pollfiles(ctx context.Context, files []fs.FileInfo, respChan chan<- PollResponse) {
+	for _, file := range files {
+		if file.IsDir() {
+			continue
+		}
+
+		if file.Name() == "" {
+			continue
+		}
+
+		ext := filepath.Ext(file.Name())
+		if ext != "" {
+			ext = strings.TrimPrefix(ext, ".")
+		}
+
+		if file.Name() == p.lastFile {
+			respChan <- newPollResponse("",
+				fmt.Errorf("cannot porcess the last known file, hanged"))
+
+			log.WithFields(ctx, log.Fields{
+				"last_file": p.lastFile,
+			}).Warn("internal/fileutil: Cannot process the last known file")
+		}
+
+		_, ok := p.availableExtensions[ext]
+		if ok && file.Name() != p.lastFile {
+			respChan <- newPollResponse(file.Name(), nil)
+
+			p.lastFile = file.Name()
+
+			break
+		}
+	}
+}
+
 // PollDirectory will pol for files that needs to be processed.
 func PollDirectory(ctx context.Context, dir string, availableExtensions map[string]bool, respChan chan<- PollResponse) {
 	const pollInterval int = 1
@@ -118,7 +173,7 @@ func PollDirectory(ctx context.Context, dir string, availableExtensions map[stri
 		"dir": dir,
 	}).Info("started to watch directory for data files")
 
-	var lastFile string
+	p := newPoller(availableExtensions)
 
 	for {
 		select {
@@ -127,51 +182,13 @@ func PollDirectory(ctx context.Context, dir string, availableExtensions map[stri
 		case <-ticker.C:
 			files, err := ioutil.ReadDir(dir)
 			if err != nil {
-				respChan <- PollResponse{
-					File: "",
-					Err:  fmt.Errorf("internal/fileutil: readdir"),
-				}
+				respChan <- newPollResponse("",
+					fmt.Errorf("internal/fileutil: readdir: %w", err))
 
 				return
 			}
 
-			for _, file := range files {
-				if file.IsDir() {
-					continue
-				}
-
-				if file.Name() == "" {
-					continue
-				}
-
-				ext := filepath.Ext(file.Name())
-				if ext != "" {
-					ext = strings.TrimPrefix(ext, ".")
-				}
-
-				if file.Name() == lastFile {
-					respChan <- PollResponse{
-						File: "",
-						Err:  fmt.Errorf("cannot porcess the last known file, hanged"),
-					}
-
-					log.WithFields(ctx, log.Fields{
-						"last_file": lastFile,
-					}).Warn("internal/fileutil: Cannot process the last known file")
-				}
-
-				_, ok := availableExtensions[ext]
-				if ok && file.Name() != lastFile {
-					respChan <- PollResponse{
-						File: file.Name(),
-						Err:  nil,
-					}
-
-					lastFile = file.Name()
-
-					break
-				}
-			}
+			p.pollfiles(ctx, files, respChan)
 		}
 	}
 }
