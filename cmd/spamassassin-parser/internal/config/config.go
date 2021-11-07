@@ -28,10 +28,6 @@ func ensureFlags() {
 	}
 }
 
-func init() {
-
-}
-
 // InputDir returns Input dir path.
 func InputDir() string {
 	ensureFlags()

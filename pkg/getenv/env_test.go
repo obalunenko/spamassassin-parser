@@ -21,13 +21,9 @@ func TestGetBoolOrDefault(t *testing.T) {
 	})
 
 	t.Run("Env set - value from env returned", func(t *testing.T) {
-		want := false
+		const want = false
 
-		reset := getenv.SetForTesting(t, key, want)
-
-		defer func() {
-			reset()
-		}()
+		getenv.SetForTesting(t, key, want)
 
 		got := getenv.BoolOrDefault("TestGetBoolOrDefault", defVal)
 		assert.Equal(t, want, got)
@@ -48,11 +44,7 @@ func TestGetStringOrDefault(t *testing.T) {
 	t.Run("Env set - value from env returned", func(t *testing.T) {
 		want := "MyVal"
 
-		reset := getenv.SetForTesting(t, key, want)
-
-		defer func() {
-			reset()
-		}()
+		getenv.SetForTesting(t, key, want)
 
 		got := getenv.StringOrDefault("TestGetBoolOrDefault", defVal)
 		assert.Equal(t, want, got)
@@ -66,15 +58,8 @@ func TestSetForTesting(t *testing.T) {
 	assert.Equal(t, original, "", "Check that variable not set.")
 
 	// Set new value for variable.
-	reset := getenv.SetForTesting(t, key, "NEW_VAL")
+	getenv.SetForTesting(t, key, "NEW_VAL")
 
 	val := os.Getenv(key)
 	assert.Equal(t, val, "NEW_VAL", "Check that variable changed value.")
-
-	// Check that after calling reset - variable returns to original state
-	reset()
-
-	val = os.Getenv(key)
-
-	assert.Equal(t, original, val, "Check that after calling reset - variable returns to original state")
 }

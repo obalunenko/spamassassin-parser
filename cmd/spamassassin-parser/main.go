@@ -119,6 +119,7 @@ func putToProcessing(ctx context.Context, proc processor.Processor, inputDir str
 		case reportFile, ok := <-fileChan:
 			if !ok {
 				log.Warn(ctx, "cmd: filechan is closed")
+
 				finish = true
 			}
 

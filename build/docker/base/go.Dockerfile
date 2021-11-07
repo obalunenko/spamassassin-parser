@@ -1,4 +1,4 @@
-FROM golang:1.17.2-alpine3.14
+FROM golang:1.17.3-alpine3.14
 MAINTAINER oleg.balunenko@gmail.com
 
 RUN mkdir -p ${GOPATH}/src/base-tools
