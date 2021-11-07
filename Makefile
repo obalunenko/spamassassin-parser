@@ -38,16 +38,20 @@ compile-spamassassin-parser-be:
 
 ## Test coverage report.
 test-cover:
-	${call colored, test-cover is running...}
 	./scripts/tests/coverage.sh
 .PHONY: test-cover
+
+## Tests sonar report generate.
+test-sonar-report:
+	./scripts/tests/sonar-report.sh
+.PHONY: test-sonar-report
 
 ## Open coverage report.
 open-cover-report: test-cover
 	./scripts/open-coverage-report.sh
 .PHONY: open-cover-report
 
-update-readme-cover: compile test-cover
+update-readme-cover: build test-cover
 	./scripts/update-readme-coverage.sh
 .PHONY: update-readme-cover
 
@@ -66,13 +70,11 @@ sync-vendor:
 
 ## Fix imports sorting.
 imports:
-	${call colored, fix-imports is running...}
 	./scripts/style/fix-imports.sh
 .PHONY: imports
 
 ## Format code with go fmt.
 fmt:
-	${call colored, fmt is running...}
 	./scripts/style/fmt.sh
 .PHONY: fmt
 
@@ -97,12 +99,16 @@ lint-full:
 
 ## Run linting for build pipeline
 lint-pipeline:
-	./scripts/linting/run-linters-pipeline.sh
+	./scripts/linting/golangci-pipeline.sh
 .PHONY: lint-pipeline
+
+## Run linting for sonar report
+lint-sonar:
+	./scripts/linting/golangci-sonar.sh
+.PHONY: lint-sonar
 
 ## recreate all generated code and swagger documentation.
 codegen:
-	${call colored, codegen is running...}
 	./scripts/codegen/go-generate.sh
 .PHONY: codegen
 
@@ -117,9 +123,13 @@ release:
 
 ## Release local snapshot
 release-local-snapshot:
-	${call colored, release is running...}
 	./scripts/release/local-snapshot-release.sh
 .PHONY: release-local-snapshot
+
+## Check goreleaser config.
+check-releaser:
+	./scripts/release/check.sh
+.PHONY: check-releaser
 
 ## Issue new release.
 new-version: vet test build
@@ -136,7 +146,6 @@ new-version: vet test build
 
 ## Push all prod images to registry.
 docker-push-prod-images:
-	${call colored, docker-push-prod-images is running...}
 	./scripts/docker/push-all-images-to-registry.sh ${DOCKER_REPO}
 .PHONY: docker-push-prod-images
 
@@ -146,7 +155,6 @@ docker-build-base-prod: docker-build-base-go-prod
 
 ## Build docker base image for GO
 docker-build-base-go-prod:
-	${call colored, docker-build-base-go-prod is running...}
 	./scripts/docker/build/prod/go-base.sh
 .PHONY: docker-build-base-go-prod
 
@@ -160,25 +168,21 @@ docker-build-backend-prod: docker-build-spamassassin-parser-prod
 
 ## Build admin service prod docker image.
 docker-build-spamassassin-parser-prod:
-	${call colored, docker-build-prod backend-admin is running...}
 	./scripts/docker/build/prod/spamassassin-parser.sh
 .PHONY: docker-build-spamassassin-parser-prod
 
 ## Docker compose up - deploys prod containers on docker locally.
 docker-compose-up:
-	${call colored, docker-up is running...}
 	./scripts/docker/compose/prod/up.sh
 .PHONY: docker-compose-up
 
 ## Docker compose down - remove all prod containers in docker locally.
 docker-compose-down:
-	${call colored, docker-down is running...}
 	./scripts/docker/compose/prod/down.sh
 .PHONY: docker-compose-down
 
 ## Docker compose stop - stops all prod containers in docker locally.
 docker-compose-stop:
-	${call colored, docker-down is running...}
 	./scripts/docker/compose/prod/stop.sh
 .PHONY: docker-compose-stop
 
@@ -212,7 +216,6 @@ docker-build-base-dev: docker-build-base-go-dev
 
 ## Build docker base image for GO
 docker-build-base-go-dev:
-	${call colored, docker-build-base-go-dev is running...}
 	./scripts/docker/build/dev/go-base.sh
 .PHONY: docker-build-base-go-dev
 
@@ -222,25 +225,21 @@ docker-build-dev: docker-build-spamassassin-parser-dev
 
 ## Build admin service dev docker image.
 docker-build-spamassassin-parser-dev:
-	${call colored, docker-build-admin-dev is running...}
 	./scripts/docker/build/dev/spamassassin-parser.sh
 .PHONY: docker-build-spamassassin-parser-dev
 
 ## Dev Docker-compose up with stubbed 3rd party dependencies.
 dev-docker-compose-up:
-	${call colored, dev-docker-up is running...}
 	./scripts/docker/compose/dev/up.sh
 .PHONY: dev-docker-compose-up
 
 ## Docker compose down.
 dev-docker-compose-down:
-	${call colored, dev-docker-down is running...}
 	./scripts/docker/compose/dev/down.sh
 .PHONY: dev-docker-compose-down
 
 ## Docker compose stop - stops all dev containers in docker locally.
 dev-docker-compose-stop:
-	${call colored, docker-down is running...}
 	./scripts/docker/compose/dev/stop.sh
 .PHONY: dev-docker-compose-stop
 
