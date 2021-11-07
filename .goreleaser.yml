@@ -31,20 +31,20 @@ universal_binaries:
     #
     # Defaults to the project name.
     id: service
-    
+
     # Universal binary name template.
     #
     # You will want to change this if you have multiple builds!
     #
     # Defaults to '{{ .ProjectName }}'
     name_template: 'spamassassin-parser'
-    
+
     # Whether to remove the previous single-arch binaries from the artifact list.
     # If left as false, your end release might have both several macOS archives: amd64, arm64 and all.
     #
     # Defaults to false.
     replace: true
-    
+
 dockers:
   # You can have multiple Docker images.
   -
@@ -108,7 +108,6 @@ archives:
       - src: deployments/docker-compose/release/docker-compose.yml
         dst: .
         strip_parent: true
-
 
 checksum:
   name_template: "{{ .ProjectName }}-{{ .Version }}-checksums.txt"

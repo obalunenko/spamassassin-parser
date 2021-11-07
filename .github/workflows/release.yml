@@ -22,37 +22,37 @@ jobs:
         uses: actions/checkout@v2.4.0
         with:
           fetch-depth: 0
-      
+
       - name: Set up go
         uses: actions/setup-go@v2.1.4
         with:
           stable: 'true'
           go-version: ${{ matrix.go }}
-      
+
       - run: |
           go version
         shell: bash
-      
+
       - name: Install tools
         run: |
           make install-tools
         shell: bash
-      
+
       - name: Vet
         run: |
           make vet
         shell: bash
-      
+
       - name: Lint
         run: |
           make lint-pipeline
         shell: bash
-      
+
       - name: Test
         run: |
           make test
         shell: bash
-      
+
       - name: Run GoReleaser
         if: success()
         env:
