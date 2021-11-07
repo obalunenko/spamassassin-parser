@@ -80,7 +80,7 @@ function go-group() {
 
   checkInstalled 'gogroup'
 
-  declare -a lints=$(gogroup -order std,other,prefix=github.com/obalunenko/ $(find . -type f -name "*.go" | grep -v "vendor/"))
+  declare -a lints=$(gogroup -order std,other,prefix=github.com/obalunenko/spamassassin-parser/ $(find . -type f -name "*.go" | grep -v "vendor/"))
 
   if [[ ${lints} ]]; then
     echo "fix it:"
@@ -103,7 +103,7 @@ function golangci() {
 
   checkInstalled 'golangci-lint'
 
-  golangci-lint run --out-format=colored-line-number ./...
+  golangci-lint run --config .golangci.yml ./...
 
   echo ""
 }
