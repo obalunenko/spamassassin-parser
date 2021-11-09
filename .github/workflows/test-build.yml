@@ -21,6 +21,55 @@ on:
       - '.github/workflows/**'
 
 jobs:
+
+  testing:
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        os: [ 'ubuntu-20.04' ]
+        go: [ '1.17' ]
+    runs-on: ${{ matrix.os }}
+    name: Run Tests
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.4.0
+        with:
+          fetch-depth: 0
+
+      - name: Set up go
+        uses: actions/setup-go@v2.1.4
+        with:
+          stable: 'true'
+          go-version: ${{ matrix.go }}
+
+      - run: |
+          go version
+        shell: bash
+
+      - name: Set up cache
+        uses: actions/cache@v2.1.6
+        env:
+          cache-name: cache-vendored-tools
+        with:
+          path: |
+            ${{ env.GOBIN }}
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/tools/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/tools/go.sum') }}
+
+      - name: Install tools
+        run: |
+          make install-tools
+        shell: bash
+
+      - name: Test
+        run: |
+          make test
+        shell: bash
+
   linting:
     needs: testing
     strategy:
@@ -62,9 +111,7 @@ jobs:
             ~/go/pkg/mod
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/tools/go.sum') }}
           restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
+            ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/tools/go.sum') }}
 
       - name: Install tools
         run: |
@@ -112,9 +159,7 @@ jobs:
             ~/go/pkg/mod
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/tools/go.sum') }}
           restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
+            ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/tools/go.sum') }}
 
       - name: Install tools
         run: |
@@ -147,56 +192,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
-  testing:
-    strategy:
-      fail-fast: false
-      max-parallel: 2
-      matrix:
-        os: [ 'ubuntu-20.04' ]
-        go: [ '1.17' ]
-    runs-on: ${{ matrix.os }}
-    name: Run Tests
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2.4.0
-        with:
-          fetch-depth: 0
-
-      - name: Set up go
-        uses: actions/setup-go@v2.1.4
-        with:
-          stable: 'true'
-          go-version: ${{ matrix.go }}
-
-      - run: |
-          go version
-        shell: bash
-
-      - name: Set up cache
-        uses: actions/cache@v2.1.6
-        env:
-          cache-name: cache-vendored-tools
-        with:
-          path: |
-            ${{ env.GOBIN }}
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/tools/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
-
-      - name: Install tools
-        run: |
-          make install-tools
-        shell: bash
-
-      - name: Test
-        run: |
-          make test
-        shell: bash
 
   build:
     needs: linting
@@ -235,9 +230,7 @@ jobs:
             ~/go/pkg/mod
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/tools/go.sum') }}
           restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
+            ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/tools/go.sum') }}
 
       - name: Install tools
         run: |
