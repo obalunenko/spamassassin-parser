@@ -2,14 +2,15 @@ ARG DOCKER_REPO_BASE
 ARG DOCKER_GO_BASE_PROD_TAG=latest
 # hadolint ignore=DL3007
 FROM ${DOCKER_REPO_BASE}spamassassin-go-base-prod:${DOCKER_GO_BASE_PROD_TAG} as build-container
+LABEL maintainer="oleg.balunenko@gmail.com"
+LABEL org.opencontainers.image.source="https://github.com/obalunenko/spamassassin-parser"
+LABEL stage="prod"
 
-MAINTAINER oleg.balunenko@gmail.com
+ENV PROJECT_DIR="${GOPATH}/src/github.com/obalunenko/spamassassin-parser"
 
-ENV PROJECT_DIR=${GOPATH}/src/github.com/obalunenko/spamassassin-parser
+RUN mkdir -p "${PROJECT_DIR}"
 
-RUN mkdir -p ${PROJECT_DIR}
-
-WORKDIR ${PROJECT_DIR}
+WORKDIR "${PROJECT_DIR}"
 
 COPY .git .git
 COPY cmd cmd
@@ -28,10 +29,10 @@ RUN make compile-spamassassin-parser-be && \
 
 COPY ./build/docker/spamassassin-parser/entrypoint.sh /app/entrypoint.sh
 
-COPY ./build/docker/spamassassin-parser/entrypoint.sh /app/entrypoint.sh
-
 FROM alpine:3.14.2 as deployment-container
 LABEL maintainer="oleg.balunenko@gmail.com"
+LABEL org.opencontainers.image.source="https://github.com/obalunenko/spamassassin-parser"
+LABEL stage="prod"
 
 # Configure least privilege user
 ARG UID=1000
@@ -44,7 +45,7 @@ WORKDIR /
 ARG APK_CA_CERTIFICATES_VERSION=20191127-r5
 RUN apk update && \
     apk add --no-cache \
-        "ca-certificates=${APK_CA_CERTIFICATES_VERSION}" \
+        "ca-certificates=${APK_CA_CERTIFICATES_VERSION}" && \
     rm -rf /var/cache/apk/*
 
 ## Add the wait script to the image
