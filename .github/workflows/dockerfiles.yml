@@ -12,6 +12,7 @@ on:
       - "!**"
       - "build/docker/**"
       - "!build/docker/**.sh"
+      - ".github/workflows/dockerfiles.yml"
 
 jobs:
   lint-dockerfiles:

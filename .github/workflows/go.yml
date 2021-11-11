@@ -18,7 +18,7 @@ on:
       - "go.sum"
       - "Makefile"
       - "!**.*md"
-      - ".github/workflows/**"
+      - ".github/workflows/go.yml"
 
 jobs:
   testing:

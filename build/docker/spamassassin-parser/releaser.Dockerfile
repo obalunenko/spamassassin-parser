@@ -1,4 +1,8 @@
 FROM alpine:3.14.2
+LABEL maintainer="oleg.balunenko@gmail.com"
+LABEL org.opencontainers.image.source="https://github.com/obalunenko/spamassassin-parser"
+LABEL stage="release"
+
 # Configure least privilege user
 ARG UID=1000
 ARG GID=1000
@@ -10,16 +14,16 @@ WORKDIR /
 ARG APK_CA_CERTIFICATES_VERSION=20191127-r5
 RUN apk update && \
     apk add --no-cache \
-        "ca-certificates=${APK_CA_CERTIFICATES_VERSION}" \
-    rm -rf /var/cache/apk/*
+        "ca-certificates=${APK_CA_CERTIFICATES_VERSION}" && \
+    rm -rf /var/cache/apk/* && \
+
+COPY spamassassin-parser /
+COPY build/docker/spamassassin-parser/entrypoint.sh /
 
 RUN mkdir -p /data/input && \
     mkdir -p /data/result && \
     mkdir -p /data/archive && \
     chown -R spamassassin:spamassassin /data
-
-COPY spamassassin-parser /
-COPY build/docker/spamassassin-parser/entrypoint.sh /
 
 ENTRYPOINT ["/entrypoint.sh"]
 
