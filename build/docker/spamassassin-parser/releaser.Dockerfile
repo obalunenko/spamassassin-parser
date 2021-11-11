@@ -15,7 +15,7 @@ ARG APK_CA_CERTIFICATES_VERSION=20191127-r5
 RUN apk update && \
     apk add --no-cache \
         "ca-certificates=${APK_CA_CERTIFICATES_VERSION}" && \
-    rm -rf /var/cache/apk/* && \
+    rm -rf /var/cache/apk/*
 
 COPY spamassassin-parser /
 COPY build/docker/spamassassin-parser/entrypoint.sh /
