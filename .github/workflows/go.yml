@@ -47,7 +47,7 @@ jobs:
         shell: bash
 
       - name: Set up cache
-        uses: actions/cache@v2.1.6
+        uses: actions/cache@v2.1.7
         env:
           cache-name: cache-vendored-tools-${{ secrets.CACHE_VERSION }}
         with:
@@ -100,7 +100,7 @@ jobs:
         shell: bash
 
       - name: Set up cache
-        uses: actions/cache@v2.1.6
+        uses: actions/cache@v2.1.7
         env:
           cache-name: cache-vendored-tools-${{ secrets.CACHE_VERSION }}
         with:
@@ -113,7 +113,7 @@ jobs:
             ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/tools/go.sum') }}
 
       - name: Set up cache
-        uses: actions/cache@v2.1.6
+        uses: actions/cache@v2.1.7
         env:
           cache-name: cache-vendored-tools
         with:
@@ -161,7 +161,7 @@ jobs:
         shell: bash
 
       - name: Set up cache
-        uses: actions/cache@v2.1.6
+        uses: actions/cache@v2.1.7
         env:
           cache-name: cache-vendored-tools-${{ secrets.CACHE_VERSION }}
         with:
@@ -232,7 +232,7 @@ jobs:
         shell: bash
 
       - name: Set up cache
-        uses: actions/cache@v2.1.6
+        uses: actions/cache@v2.1.7
         env:
           cache-name: cache-vendored-tools-${{ secrets.CACHE_VERSION }}
         with:
