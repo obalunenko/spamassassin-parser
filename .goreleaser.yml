@@ -52,7 +52,7 @@ universal_binaries:
 dockers:
   - image_templates:
       - "olegbalunenko/spamassassin-parser:{{ .Tag }}-amd64"
-      - "ghcr.io/olegbalunenko/spamassassin-parser:{{ .Tag }}-amd64"
+      - "ghcr.io/obalunenko/spamassassin-parser:{{ .Tag }}-amd64"
     use: buildx
     build_flag_templates:
       - "--pull"
@@ -69,7 +69,7 @@ dockers:
     ids: ["service", "spamassassin-parser"]
   - image_templates:
       - "olegbalunenko/spamassassin-parser:{{ .Tag }}-arm64"
-      - "ghcr.io/olegbalunenko/spamassassin-parser:{{ .Tag }}-arm64"
+      - "ghcr.io/obalunenko/spamassassin-parser:{{ .Tag }}-arm64"
     use: buildx
     build_flag_templates:
       - "--pull"
@@ -91,18 +91,21 @@ docker_manifests:
     image_templates:
       - "olegbalunenko/spamassassin-parser:{{ .Tag }}-amd64"
       - "olegbalunenko/spamassassin-parser:{{ .Tag }}-arm64"
-  - name_template: "ghcr.io/olegbalunenko/spamassassin-parser:{{ .Tag }}"
+
+  - name_template: "ghcr.io/obalunenko/spamassassin-parser:{{ .Tag }}"
     image_templates:
-      - "ghcr.io/olegbalunenko/spamassassin-parser:{{ .Tag }}-amd64"
-      - "ghcr.io/olegbalunenko/spamassassin-parser:{{ .Tag }}-arm64"
-  - name_template: "goreleaser/goreleaser:latest"
-    image_templates:
-      - "olegbalunenko/spamassassin-parser:{{ .Tag }}-amd64"
-      - "olegbalunenko/spamassassin-parser:{{ .Tag }}-arm64"
-  - name_template: "ghcr.io/olegbalunenko/spamassassin-parser:latest"
+      - "ghcr.io/obalunenko/spamassassin-parser:{{ .Tag }}-amd64"
+      - "ghcr.io/obalunenko/spamassassin-parser:{{ .Tag }}-arm64"
+
+  - name_template: "olegbalunenkospamassassin-parser:latest"
     image_templates:
       - "olegbalunenko/spamassassin-parser:{{ .Tag }}-amd64"
       - "olegbalunenko/spamassassin-parser:{{ .Tag }}-arm64"
+
+  - name_template: "ghcr.io/obalunenko/spamassassin-parser:latest"
+    image_templates:
+      - "ghcr.io/obalunenko/spamassassin-parser:{{ .Tag }}-amd64"
+      - "ghcr.io/obalunenko/spamassassin-parser:{{ .Tag }}-arm64"
 
 archives:
   - id: service
