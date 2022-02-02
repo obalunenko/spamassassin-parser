@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -20,6 +19,7 @@ import (
 	"github.com/blakesmith/ar"
 	"github.com/goreleaser/chglog"
 	"github.com/goreleaser/nfpm/v2"
+	"github.com/goreleaser/nfpm/v2/deprecation"
 	"github.com/goreleaser/nfpm/v2/files"
 	"github.com/goreleaser/nfpm/v2/internal/sign"
 	"github.com/ulikunitz/xz"
@@ -34,13 +34,24 @@ func init() {
 
 // nolint: gochecknoglobals
 var archToDebian = map[string]string{
-	"386":     "i386",
-	"arm":     "armhf",
-	"arm5":    "armel",
-	"arm6":    "armhf",
-	"arm7":    "armhf",
-	"mipsle":  "mipsel",
-	"ppc64le": "ppc64el",
+	"386":      "i386",
+	"arm5":     "armel",
+	"arm6":     "armhf",
+	"arm7":     "armhf",
+	"mipsle":   "mipsel",
+	"mips64le": "mips64el",
+	"ppc64le":  "ppc64el",
+	"s390":     "s390x",
+}
+
+func ensureValidArch(info *nfpm.Info) *nfpm.Info {
+	if info.Deb.Arch != "" {
+		info.Arch = info.Deb.Arch
+	} else if arch, ok := archToDebian[info.Arch]; ok {
+		info.Arch = arch
+	}
+
+	return info
 }
 
 // Default deb packager.
@@ -54,10 +65,7 @@ type Deb struct{}
 // to the conventions for debian packages. See:
 // https://manpages.debian.org/buster/dpkg-dev/dpkg-name.1.en.html
 func (*Deb) ConventionalFileName(info *nfpm.Info) string {
-	arch, ok := archToDebian[info.Arch]
-	if !ok {
-		arch = info.Arch
-	}
+	info = ensureValidArch(info)
 
 	version := info.Version
 	if info.Prerelease != "" {
@@ -73,7 +81,7 @@ func (*Deb) ConventionalFileName(info *nfpm.Info) string {
 	}
 
 	// package_version_architecture.package-type
-	return fmt.Sprintf("%s_%s_%s.deb", info.Name, version, arch)
+	return fmt.Sprintf("%s_%s_%s.deb", info.Name, version, info.Arch)
 }
 
 // ErrInvalidSignatureType happens if the signature type of a deb is not one of
@@ -82,10 +90,7 @@ var ErrInvalidSignatureType = errors.New("invalid signature type")
 
 // Package writes a new deb package to the given writer using the given info.
 func (d *Deb) Package(info *nfpm.Info, deb io.Writer) (err error) { // nolint: funlen
-	arch, ok := archToDebian[info.Arch]
-	if ok {
-		info.Arch = arch
-	}
+	info = ensureValidArch(info)
 	if err = info.Validate(); err != nil {
 		return err
 	}
@@ -166,7 +171,7 @@ func (*Deb) SetPackagerDefaults(info *nfpm.Info) {
 	// if in the long run we should be more strict about this and error when
 	// not set?
 	if info.Maintainer == "" {
-		log.Println("DEPRECATION WARNING: Leaving the 'maintainer' field unset will not be allowed in a future version")
+		deprecation.Println("Leaving the 'maintainer' field unset will not be allowed in a future version")
 		info.Maintainer = "Unset Maintainer <unset@localhost>"
 	}
 }
@@ -238,9 +243,6 @@ func fillDataTar(info *nfpm.Info, w io.Writer) (md5sums []byte, instSize int64, 
 	defer out.Close() // nolint: errcheck
 
 	created := map[string]bool{}
-	if err = createEmptyFoldersInsideDataTar(info, out, created); err != nil {
-		return nil, 0, err
-	}
 
 	md5buf, instSize, err := createFilesInsideDataTar(info, out, created)
 	if err != nil {
@@ -266,10 +268,51 @@ func createSymlinkInsideTar(file *files.Content, out *tar.Writer) error {
 
 func createFilesInsideDataTar(info *nfpm.Info, tw *tar.Writer,
 	created map[string]bool) (md5buf bytes.Buffer, instSize int64, err error) {
+	// create explicit directories first
 	for _, file := range info.Contents {
+		// at this point, we don't care about other types yet
+		if file.Type != "dir" {
+			continue
+		}
+
+		// only consider contents for this packager
 		if file.Packager != "" && file.Packager != packagerName {
 			continue
 		}
+
+		if err := createTree(tw, file.Destination, created); err != nil {
+			return md5buf, 0, err
+		}
+
+		normalizedName := normalizePath(strings.Trim(file.Destination, "/")) + "/"
+
+		if created[normalizedName] {
+			return md5buf, 0, fmt.Errorf("duplicate directory: %q", normalizedName)
+		}
+
+		err = tw.WriteHeader(&tar.Header{
+			Name:     normalizedName,
+			Mode:     int64(file.FileInfo.Mode),
+			Typeflag: tar.TypeDir,
+			Format:   tar.FormatGNU,
+			Uname:    file.FileInfo.Owner,
+			Gname:    file.FileInfo.Group,
+			ModTime:  file.FileInfo.MTime,
+		})
+		if err != nil {
+			return md5buf, 0, err
+		}
+
+		created[normalizedName] = true
+	}
+
+	// create files and implicit directories
+	for _, file := range info.Contents {
+		// only consider contents for this packager
+		if file.Packager != "" && file.Packager != packagerName {
+			continue
+		}
+		// create implicit directory structure below the current content
 		if err = createTree(tw, file.Destination, created); err != nil {
 			return md5buf, 0, err
 		}
@@ -277,26 +320,13 @@ func createFilesInsideDataTar(info *nfpm.Info, tw *tar.Writer,
 		var size int64 // declare early to avoid shadowing err
 		switch file.Type {
 		case "ghost":
-			// skip ghost files in apk
+			// skip ghost files in deb
+			continue
+		case "dir":
+			// already handled above
 			continue
 		case "symlink":
 			err = createSymlinkInsideTar(file, tw)
-		case "doc":
-			// nolint:gocritic
-			// ignoring `emptyFallthrough: remove empty case containing only fallthrough to default case`
-			fallthrough
-		case "licence", "license":
-			// nolint:gocritic
-			// ignoring `emptyFallthrough: remove empty case containing only fallthrough to default case`
-			fallthrough
-		case "readme":
-			// nolint:gocritic
-			// ignoring `emptyFallthrough: remove empty case containing only fallthrough to default case`
-			fallthrough
-		case "config", "config|noreplace":
-			// nolint:gocritic
-			// ignoring `emptyFallthrough: remove empty case containing only fallthrough to default case`
-			fallthrough
 		default:
 			size, err = copyToTarAndDigest(file, tw, &md5buf)
 		}
@@ -318,18 +348,6 @@ func createFilesInsideDataTar(info *nfpm.Info, tw *tar.Writer,
 	return md5buf, instSize, nil
 }
 
-func createEmptyFoldersInsideDataTar(info *nfpm.Info, out *tar.Writer, created map[string]bool) error {
-	for _, folder := range info.EmptyFolders {
-		// this .nope is actually not created, because createTree ignore the
-		// last part of the path, assuming it is a file.
-		// TODO: should probably refactor this
-		if err := createTree(out, files.ToNixPath(filepath.Join(folder, ".nope")), created); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 func copyToTarAndDigest(file *files.Content, tw *tar.Writer, md5w io.Writer) (int64, error) {
 	tarFile, err := os.OpenFile(file.Source, os.O_RDONLY, 0o600) //nolint:gosec
 	if err != nil {
@@ -340,9 +358,12 @@ func copyToTarAndDigest(file *files.Content, tw *tar.Writer, md5w io.Writer) (in
 
 	header, err := tar.FileInfoHeader(file, file.Source)
 	if err != nil {
-		log.Print(err)
 		return 0, err
 	}
+
+	// tar.FileInfoHeader only uses file.Mode().Perm() which masks the mode with
+	// 0o777 which we don't want because we want to be able to set the suid bit.
+	header.Mode = int64(file.Mode())
 	header.Format = tar.FormatGNU
 	header.Name = normalizePath(file.Destination)
 	header.Uname = file.FileInfo.Owner
@@ -577,12 +598,15 @@ func createTree(tarw *tar.Writer, dst string, created map[string]bool) error {
 			// (eg: usr/)
 			continue
 		}
+
 		if err := tarw.WriteHeader(&tar.Header{
 			Name:     path,
 			Mode:     0o755,
 			Typeflag: tar.TypeDir,
 			Format:   tar.FormatGNU,
 			ModTime:  time.Now(),
+			Uname:    "root",
+			Gname:    "root",
 		}); err != nil {
 			return fmt.Errorf("failed to create folder: %w", err)
 		}
@@ -593,7 +617,7 @@ func createTree(tarw *tar.Writer, dst string, created map[string]bool) error {
 
 func pathsToCreate(dst string) []string {
 	paths := []string{}
-	base := strings.TrimPrefix(dst, "/")
+	base := strings.Trim(dst, "/")
 	for {
 		base = filepath.Dir(base)
 		if base == "." {

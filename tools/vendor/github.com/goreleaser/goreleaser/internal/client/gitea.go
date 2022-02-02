@@ -61,7 +61,9 @@ func NewGitea(ctx *context.Context, token string) (Client, error) {
 		return nil, err
 	}
 	if ctx != nil {
-		gitea.SetContext(ctx)(client)
+		if err := gitea.SetContext(ctx)(client); err != nil {
+			return nil, err
+		}
 	}
 	return &giteaClient{client: client}, nil
 }
@@ -252,9 +254,7 @@ func (c *giteaClient) CreateRelease(ctx *context.Context, body string) (string, 
 	}
 
 	if release != nil {
-		if release.Note != "" {
-			body = release.Note
-		}
+		body = getReleaseNotes(release.Note, body, ctx.Config.Release.ReleaseNotesMode)
 		release, err = c.updateRelease(ctx, title, body, release.ID)
 		if err != nil {
 			return "", err

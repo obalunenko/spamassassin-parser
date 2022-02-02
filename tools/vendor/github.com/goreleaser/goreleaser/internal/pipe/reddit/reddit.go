@@ -5,14 +5,14 @@ import (
 
 	"github.com/apex/log"
 	"github.com/caarlos0/env/v6"
+	"github.com/caarlos0/go-reddit/v3/reddit"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/vartanbeno/go-reddit/v2/reddit"
 )
 
 const (
 	defaultTitleTemplate = `{{ .ProjectName }} {{ .Tag }} is out!`
-	defaultURLTemplate   = `{{ .GitURL }}/releases/tag/{{ .Tag }}`
+	defaultURLTemplate   = `{{ .ReleaseURL }}`
 )
 
 type Pipe struct{}

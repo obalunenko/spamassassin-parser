@@ -15,6 +15,7 @@ import (
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
+	"github.com/goreleaser/goreleaser/internal/commitauthor"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -23,12 +24,14 @@ import (
 
 const brewConfigExtra = "BrewConfig"
 
-// ErrNoArchivesFound happens when 0 archives are found.
-var ErrNoArchivesFound = errors.New("no linux/macos archives found")
+var (
+	// ErrNoArchivesFound happens when 0 archives are found.
+	ErrNoArchivesFound = errors.New("no linux/macos archives found")
 
-// ErrMultipleArchivesSameOS happens when the config yields multiple archives
-// for linux or windows.
-var ErrMultipleArchivesSameOS = errors.New("one tap can handle only archive of an OS/Arch combination. Consider using ids in the brew section")
+	// ErrMultipleArchivesSameOS happens when the config yields multiple archives
+	// for linux or windows.
+	ErrMultipleArchivesSameOS = errors.New("one tap can handle only archive of an OS/Arch combination. Consider using ids in the brew section")
+)
 
 // Pipe for brew deployment.
 type Pipe struct{}
@@ -40,12 +43,8 @@ func (Pipe) Default(ctx *context.Context) error {
 	for i := range ctx.Config.Brews {
 		brew := &ctx.Config.Brews[i]
 
-		if brew.CommitAuthor.Name == "" {
-			brew.CommitAuthor.Name = "goreleaserbot"
-		}
-		if brew.CommitAuthor.Email == "" {
-			brew.CommitAuthor.Email = "goreleaser@carlosbecker.com"
-		}
+		brew.CommitAuthor = commitauthor.Default(brew.CommitAuthor)
+
 		if brew.CommitMessageTemplate == "" {
 			brew.CommitMessageTemplate = "Brew formula update for {{ .ProjectName }} version {{ .Tag }}"
 		}
@@ -133,12 +132,17 @@ func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Clien
 		return err
 	}
 
+	author, err := commitauthor.Get(ctx, brew.CommitAuthor)
+	if err != nil {
+		return err
+	}
+
 	content, err := os.ReadFile(formula.Path)
 	if err != nil {
 		return err
 	}
 
-	return cl.CreateFile(ctx, brew.CommitAuthor, repo, content, gpath, msg)
+	return cl.CreateFile(ctx, author, repo, content, gpath, msg)
 }
 
 func doRun(ctx *context.Context, brew config.Homebrew, cl client.Client) error {
@@ -168,6 +172,7 @@ func doRun(ctx *context.Context, brew config.Homebrew, cl client.Client) error {
 			),
 			artifact.ByType(artifact.UploadableBinary),
 		),
+		artifact.OnlyReplacingUnibins,
 	}
 	if len(brew.IDs) > 0 {
 		filters = append(filters, artifact.ByIDs(brew.IDs...))

@@ -28,7 +28,7 @@ tasks:
     generates:
       - ./nfpm
     cmds:
-      - go build
+      - go build ./cmd/nfpm
 
   acceptance:pull:
     desc: Pull acceptance test images
@@ -40,14 +40,13 @@ tasks:
 
   acceptance:
     desc: Run acceptance tests
-    deps:
-      - acceptance:pull
     env:
       LC_ALL: C
     vars:
+      TEST_OPTIONS: '{{default "" .TEST_OPTIONS}}'
       TEST_PATTERN: '{{default "." .TEST_PATTERN}}'
     cmds:
-      - go test -tags=acceptance -p 4 -failfast -race -coverpkg=./... -covermode=atomic -coverprofile=coverage.txt acceptance_test.go -run {{.TEST_PATTERN}} -timeout=1h
+      - go test {{.TEST_OPTIONS}} -tags=acceptance -p 4 -failfast -race -coverpkg=./... -covermode=atomic -coverprofile=coverage.txt acceptance_test.go -run {{.TEST_PATTERN}} -timeout=1h
 
   test:
     desc: Run unit tests
@@ -68,7 +67,7 @@ tasks:
   fmt:
     desc: gofumpt all code
     cmds:
-      - gofumpt -w -l -s .
+      - gofumpt -w -l .
 
   ci:
     desc: Run all CI steps
@@ -89,6 +88,7 @@ tasks:
       - ./scripts/cmd_docs.sh
     sources:
       - cmd/*.go
+      - nfpm.go
       - ./scripts/cmd_docs.sh
       - CONTRIBUTING.md
     generates:

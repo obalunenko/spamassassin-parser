@@ -9,6 +9,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/middleware/logging"
 	"github.com/goreleaser/goreleaser/internal/middleware/skip"
 	"github.com/goreleaser/goreleaser/internal/pipe/discord"
+	"github.com/goreleaser/goreleaser/internal/pipe/linkedin"
 	"github.com/goreleaser/goreleaser/internal/pipe/mattermost"
 	"github.com/goreleaser/goreleaser/internal/pipe/reddit"
 	"github.com/goreleaser/goreleaser/internal/pipe/slack"
@@ -16,6 +17,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/teams"
 	"github.com/goreleaser/goreleaser/internal/pipe/telegram"
 	"github.com/goreleaser/goreleaser/internal/pipe/twitter"
+	"github.com/goreleaser/goreleaser/internal/pipe/webhook"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
@@ -23,7 +25,6 @@ import (
 // Announcer should be implemented by pipes that want to announce releases.
 type Announcer interface {
 	fmt.Stringer
-
 	Announce(ctx *context.Context) error
 }
 
@@ -31,6 +32,7 @@ type Announcer interface {
 var announcers = []Announcer{
 	// XXX: keep asc sorting
 	discord.Pipe{},
+	linkedin.Pipe{},
 	mattermost.Pipe{},
 	reddit.Pipe{},
 	slack.Pipe{},
@@ -38,6 +40,7 @@ var announcers = []Announcer{
 	teams.Pipe{},
 	telegram.Pipe{},
 	twitter.Pipe{},
+	webhook.Pipe{},
 }
 
 // Pipe that announces releases.

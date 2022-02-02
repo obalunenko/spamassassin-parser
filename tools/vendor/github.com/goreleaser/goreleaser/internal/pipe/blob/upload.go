@@ -81,7 +81,9 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 		artifact.ByType(artifact.UploadableSourceArchive),
 		artifact.ByType(artifact.Checksum),
 		artifact.ByType(artifact.Signature),
+		artifact.ByType(artifact.Certificate),
 		artifact.ByType(artifact.LinuxPackage),
+		artifact.ByType(artifact.SBOM),
 	)
 	if len(conf.IDs) > 0 {
 		filter = artifact.And(filter, artifact.ByIDs(conf.IDs...))
@@ -101,13 +103,11 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 			dataFile := artifact.Path
 			uploadFile := path.Join(folder, artifact.Name)
 
-			err := uploadData(ctx, conf, up, dataFile, uploadFile, bucketURL)
-
-			return err
+			return uploadData(ctx, conf, up, dataFile, uploadFile, bucketURL)
 		})
 	}
 
-	files, err := extrafiles.Find(conf.ExtraFiles)
+	files, err := extrafiles.Find(ctx, conf.ExtraFiles)
 	if err != nil {
 		return err
 	}
