@@ -13,7 +13,7 @@ env:
   DOCKER_REPO: ghcr.io/obalunenko/
 
 
-  jobs:
+jobs:
   build-base:
     name: "Build base images"
     runs-on: ubuntu-20.04
