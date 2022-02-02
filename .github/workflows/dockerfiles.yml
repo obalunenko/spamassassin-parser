@@ -23,7 +23,7 @@ jobs:
         dockerfile:
           [
             "./build/docker/base/go.Dockerfile",
-            "./build/docker/spamassassin-parser/dev.Dockerfile",
+            "./build/docker/base/alpine.Dockerfile",
             "./build/docker/spamassassin-parser/Dockerfile",
             "./build/docker/spamassassin-parser/releaser.Dockerfile",
           ]
