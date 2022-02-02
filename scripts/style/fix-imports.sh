@@ -11,7 +11,7 @@ source "${SCRIPTS_DIR}/helpers-source.sh"
 
 echo "${SCRIPT_NAME} is running... "
 
-checkInstalled 'gogroup'
+checkInstalled 'goimports'
 
 goimports -local=github.com/obalunenko/spamassassin-parser/ -w $(find . -type f -name "*.go" | grep -v "vendor/" | grep -v ".git")
 
