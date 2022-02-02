@@ -2,6 +2,8 @@ release:
   github:
     owner: obalunenko
     name: spamassassin-parser
+  footer: |
+    **Full Changelog**: https://github.com/obalunenko/spamassassin-parser/compare/{{ .PreviousTag }}...{{ .Tag }}
 
 env:
   - GO111MODULE=on
@@ -130,6 +132,7 @@ snapshot:
 
 changelog:
   sort: asc
+  use: github
   filters:
     exclude:
       - "^docs:"
@@ -144,3 +147,15 @@ changelog:
       - Rebase on master
       - "^Makefile"
       - "goreleaser"
+  groups:
+    - title: 'New Features'
+      regexp: "^.*feat[(\\w)]*:+.*$"
+      order: 0
+    - title: 'Bug fixes'
+      regexp: "^.*fix[(\\w)]*:+.*$"
+      order: 10
+    - title: Other work
+      order: 999
+
+milestones:
+  - close: true
