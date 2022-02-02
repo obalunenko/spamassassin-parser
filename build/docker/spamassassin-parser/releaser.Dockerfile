@@ -11,7 +11,7 @@ RUN addgroup -S spamassassin -g ${UID} && \
 
 WORKDIR /
 
-ARG APK_CA_CERTIFICATES_VERSION=20191127-r5
+ARG APK_CA_CERTIFICATES_VERSION=20211220-r0
 RUN apk update && \
     apk add --no-cache \
         "ca-certificates=${APK_CA_CERTIFICATES_VERSION}" && \

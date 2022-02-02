@@ -1,11 +1,11 @@
 NAME=spamassassin-parser-cli
 BIN_DIR=./bin
 
-SHELL := env DOCKER_REPO=$(DOCKER_REPO) $(SHELL)
-DOCKER_REPO?=olegbalunenko
+DOCKER_REPO ?= ghcr.io/obalunenko/
+export DOCKER_REPO
 
-SHELL := env VERSION=$(VERSION) $(SHELL)
 VERSION ?= $(shell git describe --tags $(git rev-list --tags --max-count=1))
+export VERSION
 
 TARGET_MAX_CHAR_NUM=20
 
@@ -142,21 +142,30 @@ new-version: vet test build
 ############### DOCKER ###############
 ######################################
 
+
+################ BASE #################
+
+## Build docker base images.
+docker-build-base: docker-build-base-go docker-build-base-alpine
+.PHONY: docker-build-base
+
+## Build docker base image for GO
+docker-build-base-go:
+	./scripts/docker/build/base/go.sh
+.PHONY: docker-build-base-go
+
+
+## Build docker base image for alpine
+docker-build-base-alpine:
+	./scripts/docker/build/base/alpine.sh
+.PHONY: docker-build-base-alpine
+
 ################ PROD #################
 
 ## Push all prod images to registry.
 docker-push-prod-images:
-	./scripts/docker/push-all-images-to-registry.sh ${DOCKER_REPO}
+	./scripts/docker/push-all-images-to-registry.sh ${DOCKER_REPO}spamassassin
 .PHONY: docker-push-prod-images
-
-## Build docker base images.
-docker-build-base-prod: docker-build-base-go-prod
-.PHONY: docker-build-base-prod
-
-## Build docker base image for GO
-docker-build-base-go-prod:
-	./scripts/docker/build/prod/go-base.sh
-.PHONY: docker-build-base-go-prod
 
 ## Build all services docker prod images for deploying to gcloud.
 docker-build-prod: docker-build-backend-prod
@@ -187,7 +196,7 @@ docker-compose-stop:
 .PHONY: docker-compose-stop
 
 ## Build all prod images: base and services.
-docker-prepare-images-prod: docker-build-base-prod docker-build-prod
+docker-prepare-images-prod: docker-build-base docker-build-prod
 .PHONY: docker-prepare-images-prod
 
 ## Prod local full deploy: build base images, build services images, deploy to docker compose
@@ -209,15 +218,6 @@ open-container-logs:
 
 
 ################## DEV ###################
-
-## Build docker base images.
-docker-build-base-dev: docker-build-base-go-dev
-.PHONY: docker-build-base-dev
-
-## Build docker base image for GO
-docker-build-base-go-dev:
-	./scripts/docker/build/dev/go-base.sh
-.PHONY: docker-build-base-go-dev
 
 ## Build docker dev image for running locally.
 docker-build-dev: docker-build-spamassassin-parser-dev
@@ -244,7 +244,7 @@ dev-docker-compose-stop:
 .PHONY: dev-docker-compose-stop
 
 ## Dev local full deploy: build base images, build services images, deploy to docker compose
-deploy-local-dev: docker-build-base-dev docker-build-dev run-local-dev
+deploy-local-dev: docker-build-base docker-build-dev run-local-dev
 .PHONY: deploy-local-dev
 
 ## Run locally dev: deploy to docker compose and expose tunnels.

@@ -28,7 +28,7 @@ services:
     container_name: spamassassin-parser
     networks:
       - spamassassin
-    image: 'spamassassin-parser:latest'
+    image: '${DOCKER_REPO}spamassassin-parser:latest'
     environment:
       SPAMASSASSIN_INPUT: "data/input"
       SPAMASSASSIN_RESULT: "data/result"

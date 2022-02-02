@@ -7,14 +7,8 @@ SCRIPT_DIR="$(dirname "$0")"
 REPO_ROOT="$(cd "${SCRIPT_DIR}" && git rev-parse --show-toplevel)"
 SCRIPTS_DIR="${REPO_ROOT}/scripts"
 
-source "${SCRIPTS_DIR}/helpers-source.sh"
-
-echo "${SCRIPT_NAME} is running... "
-
-checkInstalled 'docker'
-
 SHORTCOMMIT="$(git rev-parse --short HEAD)"
-VERSION="$(git describe --tags --always "$(git rev-list --tags --max-count=1)")"
+VERSION=${VERSION}
 
 if [ -z "${VERSION}" ] || [ "${VERSION}" = "${SHORTCOMMIT}" ]
  then
@@ -23,10 +17,19 @@ fi
 
 DOCKER_REPO="${DOCKER_REPO}"
 
+source "${SCRIPTS_DIR}/helpers-source.sh"
+
+echo "${SCRIPT_NAME} is running... "
+
+checkInstalled 'docker'
+
 docker build --rm --no-cache \
-    -t "${DOCKER_REPO}spamassassin-parser-prod:${VERSION}" \
-    -t "${DOCKER_REPO}spamassassin-parser-prod:latest" \
+    -t "${DOCKER_REPO}spamassassin-parser-dev:${VERSION}" \
+    -t "${DOCKER_REPO}spamassassin-parser-dev:latest" \
     -f "${REPO_ROOT}/build/docker/spamassassin-parser/Dockerfile" \
-    --build-arg DOCKER_REPO="${DOCKER_REPO}" .
+    --build-arg DOCKER_REPO="${DOCKER_REPO}" \
+    --build-arg DOCKER_GO_BASE_TAG=latest \
+    --build-arg DOCKER_ALPINE_BASE_TAG=latest \
+    --build-arg STAGE_ENV="prod" .
 
 echo "${SCRIPT_NAME} done."
