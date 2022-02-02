@@ -26,7 +26,6 @@ checkInstalled 'docker'
 docker build --rm --no-cache \
     -t "${DOCKER_REPO}spamassassin-alpine-base:${VERSION}" \
     -t "${DOCKER_REPO}spamassassin-alpine-base:latest" \
-    -f "${REPO_ROOT}/build/docker/base/alpine.Dockerfile" \
-    --build-arg DOCKER_REPO="${DOCKER_REPO}" .
+    -f "${REPO_ROOT}/build/docker/base/alpine.Dockerfile" .
 
 echo "${SCRIPT_NAME} done."
