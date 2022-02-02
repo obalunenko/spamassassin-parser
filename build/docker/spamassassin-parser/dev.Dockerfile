@@ -29,7 +29,7 @@ RUN make compile-spamassassin-parser-be && \
 
 COPY ./build/docker/spamassassin-parser/entrypoint.sh /app/entrypoint.sh
 
-FROM alpine:3.14.2 as deployment-container
+FROM alpine:3.15.0 as deployment-container
 LABEL maintainer="oleg.balunenko@gmail.com"
 LABEL org.opencontainers.image.source="https://github.com/obalunenko/spamassassin-parser"
 LABEL stage="dev"

@@ -1,4 +1,4 @@
-FROM alpine:3.14.2
+FROM alpine:3.15.0
 LABEL maintainer="oleg.balunenko@gmail.com"
 LABEL org.opencontainers.image.source="https://github.com/obalunenko/spamassassin-parser"
 LABEL stage="release"
