@@ -9,6 +9,7 @@ env:
   - GO111MODULE=on
   - CGO_ENABLED=0
   - GOPROXY=https://proxy.golang.org,direct
+  - DOCKER_REPO=ghcr.io/obalunenko/
 before:
   hooks:
     - go mod verify
@@ -17,12 +18,14 @@ builds:
   - id: service
     binary: spamassassin-parser
     goos:
-      - darwin
-      - windows
       - linux
+      - darwin
     goarch:
       - amd64
       - arm
+      - arm64
+    goarm:
+      - "7"
     main: ./cmd/spamassassin-parser
     ldflags:
       - "{{ .Env.GO_BUILD_LDFLAGS }}"
@@ -58,6 +61,7 @@ dockers:
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
       - "--label=org.opencontainers.image.source={{.GitURL}}"
+      - "--build-arg=DOCKER_REPO={{.Env.DOCKER_REPO}}"
       - "--platform=linux/amd64"
     dockerfile: build/docker/spamassassin-parser/releaser.Dockerfile
     extra_files:
@@ -74,6 +78,7 @@ dockers:
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
       - "--label=org.opencontainers.image.source={{.GitURL}}"
+      - "--build-arg=DOCKER_REPO={{.Env.DOCKER_REPO}}"
       - "--platform=linux/arm64"
     goarch: arm64
     dockerfile: build/docker/spamassassin-parser/releaser.Dockerfile

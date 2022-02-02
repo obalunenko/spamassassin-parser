@@ -1,4 +1,7 @@
-FROM alpine:3.15.0
+ARG DOCKER_REPO
+ARG DOCKER_ALPINE_BASE_TAG=latest
+
+FROM ${DOCKER_REPO}spamassassin-alpine-base:${DOCKER_ALPINE_BASE_TAG} as deployment-container
 LABEL maintainer="oleg.balunenko@gmail.com"
 LABEL org.opencontainers.image.source="https://github.com/obalunenko/spamassassin-parser"
 LABEL stage="release"
@@ -10,12 +13,6 @@ RUN addgroup -S spamassassin -g ${UID} && \
     adduser -S spamassassin -u ${GID} -G spamassassin -h /home/spamassassin -s /bin/sh -D spamassassin
 
 WORKDIR /
-
-ARG APK_CA_CERTIFICATES_VERSION=20211220-r0
-RUN apk update && \
-    apk add --no-cache \
-        "ca-certificates=${APK_CA_CERTIFICATES_VERSION}" && \
-    rm -rf /var/cache/apk/*
 
 COPY spamassassin-parser /
 COPY build/docker/spamassassin-parser/entrypoint.sh /
