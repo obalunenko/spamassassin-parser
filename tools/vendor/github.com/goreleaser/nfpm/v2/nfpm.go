@@ -11,6 +11,7 @@ import (
 	"github.com/AlekSi/pointer"
 	"github.com/Masterminds/semver/v3"
 	"github.com/goreleaser/chglog"
+	"github.com/goreleaser/nfpm/v2/deprecation"
 	"github.com/goreleaser/nfpm/v2/files"
 	"github.com/imdario/mergo"
 	"gopkg.in/yaml.v3"
@@ -75,7 +76,7 @@ func ParseWithEnvMapping(in io.Reader, mapping func(string) string) (config Conf
 
 	WithDefaults(&config.Info)
 
-	return config, config.Validate()
+	return config, nil
 }
 
 // ParseFile decodes YAML data from a file path into a configuration struct.
@@ -153,6 +154,9 @@ func (c *Config) expandEnvVars() {
 	c.Info.Prerelease = os.Expand(c.Info.Prerelease, c.envMappingFunc)
 	c.Info.Arch = os.Expand(c.Info.Arch, c.envMappingFunc)
 
+	// Vendor field
+	c.Info.Vendor = os.Expand(c.Info.Vendor, c.envMappingFunc)
+
 	// Package signing related fields
 	c.Info.Deb.Signature.KeyFile = os.Expand(c.Deb.Signature.KeyFile, c.envMappingFunc)
 	c.Info.RPM.Signature.KeyFile = os.Expand(c.RPM.Signature.KeyFile, c.envMappingFunc)
@@ -181,6 +185,9 @@ func (c *Config) expandEnvVars() {
 	if apkPassphrase != "" {
 		c.Info.APK.Signature.KeyPassphrase = apkPassphrase
 	}
+
+	// RPM specific
+	c.Info.RPM.Packager = os.Expand(c.RPM.Packager, c.envMappingFunc)
 }
 
 // Info contains information about a single package.
@@ -254,7 +261,7 @@ type Overridables struct {
 	Suggests     []string       `yaml:"suggests,omitempty" jsonschema:"title=suggests directive,example=nfpm"`
 	Conflicts    []string       `yaml:"conflicts,omitempty" jsonschema:"title=conflicts directive,example=nfpm"`
 	Contents     files.Contents `yaml:"contents,omitempty" jsonschema:"title=files to add to the package"`
-	EmptyFolders []string       `yaml:"empty_folders,omitempty" jsonschema:"title=empty folders to be created when installing the package,example=/var/log/nfpm"`
+	EmptyFolders []string       `yaml:"empty_folders,omitempty" jsonschema:"title=empty folders to be created when installing the package,example=/var/log/nfpm"` // deprecated
 	Scripts      Scripts        `yaml:"scripts,omitempty" jsonschema:"title=scripts to execute"`
 	RPM          RPM            `yaml:"rpm,omitempty" jsonschema:"title=rpm-specific settings"`
 	Deb          Deb            `yaml:"deb,omitempty" jsonschema:"title=deb-specific settings"`
@@ -263,11 +270,13 @@ type Overridables struct {
 
 // RPM is custom configs that are only available on RPM packages.
 type RPM struct {
+	Arch        string       `yaml:"arch,omitempty" jsonschema:"title=architecture in rpm nomenclature"`
 	Scripts     RPMScripts   `yaml:"scripts,omitempty" jsonschema:"title=rpm-specific scripts"`
 	Group       string       `yaml:"group,omitempty" jsonschema:"title=package group,example=Unspecified"`
 	Summary     string       `yaml:"summary,omitempty" jsonschema:"title=package summary"`
 	Compression string       `yaml:"compression,omitempty" jsonschema:"title=compression algorithm to be used,enum=gzip,enum=lzma,enum=xz,default=gzip"`
 	Signature   RPMSignature `yaml:"signature,omitempty" jsonschema:"title=rpm signature"`
+	Packager    string       `yaml:"packager,omitempty" jsonschema:"title=organization that actually packaged the software"`
 }
 
 // RPMScripts represents scripts only available on RPM packages.
@@ -288,6 +297,7 @@ type RPMSignature struct {
 }
 
 type APK struct {
+	Arch      string       `yaml:"arch,omitempty" jsonschema:"title=architecture in apk nomenclature"`
 	Signature APKSignature `yaml:"signature,omitempty" jsonschema:"title=apk signature"`
 	Scripts   APKScripts   `yaml:"scripts,omitempty" jsonschema:"title=apk scripts"`
 }
@@ -305,6 +315,7 @@ type APKScripts struct {
 
 // Deb is custom configs that are only available on deb packages.
 type Deb struct {
+	Arch        string       `yaml:"arch,omitempty" jsonschema:"title=architecture in deb nomenclature"`
 	Scripts     DebScripts   `yaml:"scripts,omitempty" jsonschema:"title=scripts"`
 	Triggers    DebTriggers  `yaml:"triggers,omitempty" jsonschema:"title=triggers"`
 	Breaks      []string     `yaml:"breaks,omitempty" jsonschema:"title=breaks"`
@@ -359,7 +370,7 @@ func Validate(info *Info) (err error) {
 	if info.Name == "" {
 		return ErrFieldEmpty{"name"}
 	}
-	if info.Arch == "" {
+	if info.Arch == "" && (info.Deb.Arch == "" || info.RPM.Arch == "" || info.APK.Arch == "") {
 		return ErrFieldEmpty{"arch"}
 	}
 	if info.Version == "" {
@@ -371,7 +382,30 @@ func Validate(info *Info) (err error) {
 		return err
 	}
 
+	if len(info.EmptyFolders) > 0 {
+		deprecation.Println("'empty_folders' is deprecated and " +
+			"will be removed in a future version, create content with type 'dir' and " +
+			"directoy name as 'dst' instead")
+
+		for _, emptyFolder := range info.EmptyFolders {
+			if contents.ContainsDestination(emptyFolder) {
+				return fmt.Errorf("empty folder already exists in contents: %s", emptyFolder)
+			}
+
+			f := &files.Content{
+				Destination: emptyFolder,
+				Type:        "dir",
+			}
+			contents = append(contents, f.WithFileInfoDefaults())
+		}
+	}
+
+	// The deprecated EmptyFolders are already converted to contents, so we
+	// remove it such that Validate can be called more than once.
+	info.EmptyFolders = nil
+
 	info.Contents = contents
+
 	return nil
 }
 

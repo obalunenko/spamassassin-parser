@@ -14,19 +14,19 @@ import (
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
+	"github.com/goreleaser/goreleaser/internal/commitauthor"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
-const goFishConfigExtra = "GoFishConfig"
-
-const foodFolder = "Food"
+const (
+	goFishConfigExtra = "GoFishConfig"
+	foodFolder        = "Food"
+)
 
 var ErrNoArchivesFound = errors.New("no linux/macos/windows archives found")
-
-var ErrMultipleArchivesSameOS = errors.New("one rig can handle only archive of an OS/Arch combination. Consider using ids in the gofish section")
 
 // Pipe for goFish deployment.
 type Pipe struct{}
@@ -38,12 +38,7 @@ func (Pipe) Default(ctx *context.Context) error {
 	for i := range ctx.Config.Rigs {
 		goFish := &ctx.Config.Rigs[i]
 
-		if goFish.CommitAuthor.Name == "" {
-			goFish.CommitAuthor.Name = "goreleaserbot"
-		}
-		if goFish.CommitAuthor.Email == "" {
-			goFish.CommitAuthor.Email = "goreleaser@carlosbecker.com"
-		}
+		goFish.CommitAuthor = commitauthor.Default(goFish.CommitAuthor)
 		if goFish.CommitMessageTemplate == "" {
 			goFish.CommitMessageTemplate = "GoFish fish food update for {{ .ProjectName }} version {{ .Tag }}"
 		}
@@ -101,6 +96,7 @@ func doRun(ctx *context.Context, goFish config.GoFish, cl client.Client) error {
 			artifact.ByType(artifact.UploadableArchive),
 			artifact.ByType(artifact.UploadableBinary),
 		),
+		artifact.OnlyReplacingUnibins,
 	}
 	if len(goFish.IDs) > 0 {
 		filters = append(filters, artifact.ByIDs(goFish.IDs...))
@@ -123,15 +119,15 @@ func doRun(ctx *context.Context, goFish config.GoFish, cl client.Client) error {
 	}
 
 	filename := goFish.Name + ".lua"
-	path := filepath.Join(ctx.Config.Dist, filename)
-	log.WithField("food", path).Info("writing")
-	if err := os.WriteFile(path, []byte(content), 0o644); err != nil { //nolint: gosec
+	luaPath := filepath.Join(ctx.Config.Dist, filename)
+	log.WithField("food", luaPath).Info("writing")
+	if err := os.WriteFile(luaPath, []byte(content), 0o644); err != nil { //nolint: gosec
 		return fmt.Errorf("failed to write gofish food: %w", err)
 	}
 
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name: filename,
-		Path: path,
+		Path: luaPath,
 		Type: artifact.GoFishRig,
 		Extra: map[string]interface{}{
 			goFishConfigExtra: goFish,
@@ -238,11 +234,6 @@ func dataFor(ctx *context.Context, cfg config.GoFish, cl client.Client, artifact
 					Target: art.ExtraOr(artifact.ExtraBinary, art.Name).(string),
 				})
 			}
-			for _, v := range result.ReleasePackages {
-				if v.OS == art.Goos && v.Arch == art.Goarch {
-					return result, ErrMultipleArchivesSameOS
-				}
-			}
 			result.ReleasePackages = append(result.ReleasePackages, releasePackage)
 		}
 	}
@@ -302,12 +293,17 @@ func doPublish(ctx *context.Context, food *artifact.Artifact, cl client.Client) 
 		return err
 	}
 
+	author, err := commitauthor.Get(ctx, rig.CommitAuthor)
+	if err != nil {
+		return err
+	}
+
 	content, err := os.ReadFile(food.Path)
 	if err != nil {
 		return err
 	}
 
-	return cl.CreateFile(ctx, rig.CommitAuthor, repo, content, gpath, msg)
+	return cl.CreateFile(ctx, author, repo, content, gpath, msg)
 }
 
 func buildFoodPath(folder, filename string) string {

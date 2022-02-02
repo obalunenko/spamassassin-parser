@@ -15,6 +15,6 @@ checkInstalled 'gofmt'
 
 GO_FILES=$(find . -type f -name '*.go' | grep -v 'vendor' | grep -v '.git')
 
-gofmt -s -w -l ${GO_FILES}
+gofmt -s -w ${GO_FILES}
 
 echo "${SCRIPT_NAME} done."
