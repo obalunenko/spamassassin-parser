@@ -43,10 +43,15 @@ type Logger interface {
 	WithFields(fields Fields) Logger
 
 	Writer() io.WriteCloser
+	LogLevel() Level
 }
 
 type logrusWrapper struct {
 	le *logrus.Entry
+}
+
+func (l logrusWrapper) LogLevel() Level {
+	return Level{Level: l.le.Level}
 }
 
 func (l logrusWrapper) Debug(msg string) {
