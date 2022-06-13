@@ -27,37 +27,22 @@ func makeFormatter(format string) logrus.Formatter {
 }
 
 func jsonFormatter() logrus.Formatter {
-	f := logrus.JSONFormatter{
-		TimestampFormat:   time.RFC3339Nano,
-		DisableTimestamp:  false,
-		DisableHTMLEscape: false,
-		DataKey:           "metadata",
-		FieldMap:          nil,
-		CallerPrettyfier:  nil,
-		PrettyPrint:       false,
-	}
+	f := new(logrus.JSONFormatter)
+	f.TimestampFormat = time.RFC3339Nano
 
-	return &f
+	f.DataKey = "metadata"
+
+	return f
 }
 
 func textFormatter() logrus.Formatter {
-	f := logrus.TextFormatter{
-		ForceColors:               false,
-		DisableColors:             false,
-		ForceQuote:                false,
-		DisableQuote:              false,
-		EnvironmentOverrideColors: false,
-		DisableTimestamp:          false,
-		FullTimestamp:             true,
-		TimestampFormat:           "02-01-2006 15:04:05",
-		DisableSorting:            false,
-		SortingFunc:               nil,
-		DisableLevelTruncation:    false,
-		PadLevelText:              false,
-		QuoteEmptyFields:          true,
-		FieldMap:                  nil,
-		CallerPrettyfier:          nil,
-	}
+	f := new(logrus.TextFormatter)
 
-	return &f
+	f.ForceColors = true
+	f.DisableColors = false
+	f.FullTimestamp = true
+	f.TimestampFormat = "02-01-2006 15:04:05"
+	f.QuoteEmptyFields = true
+
+	return f
 }
