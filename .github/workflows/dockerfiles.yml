@@ -36,6 +36,6 @@ jobs:
           fetch-depth: 0
 
       - name: Lint
-        uses: hadolint/hadolint-action@v2.1.0
+        uses: hadolint/hadolint-action@v3.0.0
         with:
           dockerfile: ${{ matrix.dockerfile }}
