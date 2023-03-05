@@ -12,11 +12,17 @@ source "${SCRIPTS_DIR}/helpers-source.sh"
 
 echo "${SCRIPT_NAME} is running... "
 
-export GO111MODULE=on
+checkInstalled gocov
 
-rm -rf "${COVER_DIR}"
-mkdir -p "${COVER_DIR}"
+{
+  echo "mode: atomic"
+  tail -q -n +2 "${COVER_DIR}"/*.cov
+} >>"${COVER_DIR}/full.cov"
 
-go test --count=1 -coverprofile "${COVER_DIR}/unit.cov" -covermode=atomic -json ./... >tests-report.json
+gocov convert "${COVER_DIR}/full.cov" >"${COVER_DIR}/full.json"
+
+checkInstalled 'gocov-html'
+
+gocov-html "${COVER_DIR}/full.json" >"${COVER_DIR}/full.html"
 
 echo "${SCRIPT_NAME} is done... "

@@ -1,10 +1,10 @@
-FROM alpine:3.15.0
+FROM alpine:3.17.0
 LABEL maintainer="oleg.balunenko@gmail.com"
 LABEL org.opencontainers.image.source="https://github.com/obalunenko/spamassassin-parser"
 
 LABEL stage="base"
 
-ARG APK_CA_CERTIFICATES_VERSION=20211220-r0
+ARG APK_CA_CERTIFICATES_VERSION=20220614-r4
 RUN apk update && \
     apk add --no-cache \
         "ca-certificates=${APK_CA_CERTIFICATES_VERSION}" && \

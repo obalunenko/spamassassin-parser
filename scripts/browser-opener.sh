@@ -25,8 +25,6 @@ while getopts u: flag; do
   esac
 done
 
-
-
 function openurl() {
   echo "${URL}"
   openSource "${URL}"

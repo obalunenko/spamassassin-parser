@@ -14,18 +14,10 @@ RUN mkdir -p "${PROJECT_DIR}"
 
 WORKDIR "${PROJECT_DIR}"
 
-COPY .git .git
-COPY cmd cmd
-COPY internal internal
-COPY pkg pkg
-COPY scripts scripts
-COPY vendor vendor
-COPY go.mod go.mod
-COPY go.sum go.sum
-COPY Makefile Makefile
+COPY . .
 
 # compile executable
-RUN make compile-spamassassin-parser-be && \
+RUN make build && \
     mkdir -p /app && \
     cp ./bin/spamassassin-parser /app/spamassassin-parser
 

@@ -24,8 +24,8 @@ echo "${SCRIPT_NAME} is running... "
 checkInstalled 'docker'
 
 docker build --rm --no-cache \
-    -t "${DOCKER_REPO}spamassassin-parser-dev:${VERSION}" \
-    -t "${DOCKER_REPO}spamassassin-parser-dev:latest" \
+    -t "${DOCKER_REPO}spamassassin-parser:${VERSION}" \
+    -t "${DOCKER_REPO}spamassassin-parser:latest" \
     -f "${REPO_ROOT}/build/docker/spamassassin-parser/Dockerfile" \
     --build-arg DOCKER_REPO="${DOCKER_REPO}" \
     --build-arg DOCKER_GO_BASE_TAG=latest \

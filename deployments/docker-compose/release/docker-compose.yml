@@ -5,7 +5,7 @@ services:
     container_name: spamassassin-logs
     networks:
       - spamassassin
-    image: 'amir20/dozzle:v3.8.0'
+    image: 'amir20/dozzle:v4.8.1'
     environment:
       DOZZLE_ADDR: ':9999'
       DOZZLE_BASE: /

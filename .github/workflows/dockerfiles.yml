@@ -1,11 +1,11 @@
-name: Dockerfiles [lint]
+name: build-lint-docker-images
 
 on:
   push:
     branches:
       - "master"
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [ opened, synchronize, reopened ]
     branches:
       - "*"
     paths:
@@ -25,9 +25,9 @@ jobs:
             "./build/docker/base/go.Dockerfile",
             "./build/docker/base/alpine.Dockerfile",
             "./build/docker/spamassassin-parser/Dockerfile",
-            "./build/docker/spamassassin-parser/releaser.Dockerfile",
+            "./build/docker/spamassassin-parser//releaser.Dockerfile",
           ]
-    runs-on: "ubuntu-20.04"
+    runs-on: "ubuntu-22.04"
     name: Lint ${{ matrix.dockerfile }}
     steps:
       - name: Checkout
@@ -36,6 +36,40 @@ jobs:
           fetch-depth: 0
 
       - name: Lint
-        uses: hadolint/hadolint-action@v3.1.0
+        uses: jbergstroem/hadolint-gh-action@v1
         with:
           dockerfile: ${{ matrix.dockerfile }}
+          annotate: true
+          error_level: 2
+
+  build:
+    strategy:
+      fail-fast: true
+      max-parallel: 2
+      matrix:
+        env:
+          [
+            "prod",
+            "dev",
+          ]
+    needs: [ lint-dockerfiles ]
+    name: Build
+    runs-on: "ubuntu-22.04"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3.3.0
+        with:
+          fetch-depth: 0
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+        with:
+          platforms: 'linux/arm64,linux/amd64'
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build ${{ matrix.env }} images
+        run: |
+          make docker-prepare-images-${{ matrix.env }}
+
