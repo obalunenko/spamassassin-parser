@@ -1,6 +1,6 @@
 module github.com/obalunenko/spamassassin-parser
 
-go 1.17
+go 1.20
 
 require (
 	github.com/obalunenko/logger v0.5.1

@@ -3,7 +3,7 @@ ARG DOCKER_GO_BASE_TAG=latest
 ARG DOCKER_ALPINE_BASE_TAG=latest
 ARG STAGE_ENV="prod"
 # hadolint ignore=DL3007
-FROM ${DOCKER_REPO}spamassassin-go-base:${DOCKER_GO_BASE_TAG} as build-container
+FROM ${DOCKER_REPO}spamassassin-go-base:${DOCKER_GO_BASE_TAG} AS build-container
 LABEL maintainer="oleg.balunenko@gmail.com"
 LABEL org.opencontainers.image.source="https://github.com/obalunenko/spamassassin-parser"
 LABEL stage=${STAGE_ENV}
@@ -18,20 +18,20 @@ COPY .git .git
 COPY cmd cmd
 COPY internal internal
 COPY pkg pkg
-COPY scripts scripts
 COPY vendor vendor
 COPY go.mod go.mod
 COPY go.sum go.sum
+COPY scripts scripts
 COPY Makefile Makefile
 
 # compile executable
-RUN make compile-spamassassin-parser-be && \
+RUN make build && \
     mkdir -p /app && \
     cp ./bin/spamassassin-parser /app/spamassassin-parser
 
 COPY ./build/docker/spamassassin-parser/entrypoint.sh /app/entrypoint.sh
 
-FROM ${DOCKER_REPO}spamassassin-alpine-base:${DOCKER_ALPINE_BASE_TAG} as deployment-container
+FROM ${DOCKER_REPO}spamassassin-alpine-base:${DOCKER_ALPINE_BASE_TAG} AS deployment-container
 LABEL maintainer="oleg.balunenko@gmail.com"
 LABEL org.opencontainers.image.source="https://github.com/obalunenko/spamassassin-parser"
 LABEL stage=${STAGE_ENV}

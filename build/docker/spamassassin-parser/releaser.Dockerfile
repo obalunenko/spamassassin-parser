@@ -1,7 +1,4 @@
-ARG DOCKER_REPO
-ARG DOCKER_ALPINE_BASE_TAG=latest
-
-FROM ${DOCKER_REPO}spamassassin-alpine-base:${DOCKER_ALPINE_BASE_TAG} as deployment-container
+FROM alpine:3.17.0 AS deployment-container
 LABEL maintainer="oleg.balunenko@gmail.com"
 LABEL org.opencontainers.image.source="https://github.com/obalunenko/spamassassin-parser"
 LABEL stage="release"
