@@ -10,8 +10,8 @@ github.com/evalphobia/logrus_sentry
 # github.com/getsentry/raven-go v0.2.0
 ## explicit
 github.com/getsentry/raven-go
-# github.com/obalunenko/logger v0.5.1
-## explicit; go 1.18
+# github.com/obalunenko/logger v0.6.0
+## explicit; go 1.20
 github.com/obalunenko/logger
 # github.com/obalunenko/version v1.1.0
 ## explicit; go 1.17

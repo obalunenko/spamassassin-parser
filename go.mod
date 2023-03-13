@@ -3,7 +3,7 @@ module github.com/obalunenko/spamassassin-parser
 go 1.20
 
 require (
-	github.com/obalunenko/logger v0.5.1
+	github.com/obalunenko/logger v0.6.0
 	github.com/obalunenko/version v1.1.0
 	github.com/stretchr/testify v1.8.2
 )
