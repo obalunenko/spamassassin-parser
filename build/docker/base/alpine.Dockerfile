@@ -4,7 +4,7 @@ LABEL org.opencontainers.image.source="https://github.com/obalunenko/spamassassi
 
 LABEL stage="base"
 
-ARG APK_CA_CERTIFICATES_VERSION=20220614-r4
+ARG APK_CA_CERTIFICATES_VERSION=~20230506
 RUN apk update && \
     apk add --no-cache \
         "ca-certificates=${APK_CA_CERTIFICATES_VERSION}" && \
