@@ -9,7 +9,7 @@ VERSION ?= $(shell git describe --tags $(git rev-list --tags --max-count=1))
 APP_NAME?=spamassassin-parser
 SHELL := env APP_NAME=$(APP_NAME) $(SHELL)
 
-GOTOOLS_IMAGE_TAG?=v0.10.0
+GOTOOLS_IMAGE_TAG?=v0.12.1
 SHELL := env GOTOOLS_IMAGE_TAG=$(GOTOOLS_IMAGE_TAG) $(SHELL)
 
 COMPOSE_TOOLS_FILE=deployments/docker-compose/go-tools-docker-compose.yml
