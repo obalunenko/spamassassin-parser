@@ -99,7 +99,6 @@ archives:
     format_overrides:
       - goos: windows
         format: zip
-    rlcp: true
     name_template: "{{ .Binary }}-{{ .Version }}-{{ .Os }}-{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
     files:
       - LICENSE
